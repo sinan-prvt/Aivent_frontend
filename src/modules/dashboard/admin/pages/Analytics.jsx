@@ -1,14 +1,12 @@
-import React from 'react';
+// src/modules/dashboard/admin/pages/Analytics.jsx
+import React from "react";
 
 export default function Analytics() {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-800">Analytics</h2>
-        <p className="text-gray-600 mt-2">Platform analytics and insights</p>
-      </div>
-      <div className="bg-white rounded-xl shadow border border-gray-200 p-6">
-        <p className="text-gray-500">Analytics dashboard coming soon...</p>
+      <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+      <div className="bg-white rounded-xl p-6 shadow">
+        <p className="text-gray-600">Analytics components and charts go here. Use recharts or Chart.js per your preference.</p>
       </div>
     </div>
   );

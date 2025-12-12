@@ -9,6 +9,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    logout();
     logoutEverywhere(navigate);
   };
 

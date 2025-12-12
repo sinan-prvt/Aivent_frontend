@@ -1,11 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
-import Home from "../../modules/auth/pages/home";
-
+import Home from "../../modules/auth/pages/Home";
 import Login from "../../modules/auth/pages/Login";
 import Register from "../../modules/auth/pages/Register";
-
 import Profile from "@/modules/user/pages/Profile";
 
 import ForgotPassword from "../../modules/auth/pages/ForgotPassword";
@@ -24,34 +22,51 @@ import MicrosoftCallback from "../../modules/auth/pages/MicrosoftCallback";
 import AdminDashboard from "../../modules/dashboard/admin/pages/AdminDashboard";
 
 
+// ------------------------------------------------------
+// 1. BLOCK login/register ONLY if logged in
+// ------------------------------------------------------
 function BlockWhenLoggedIn({ children }) {
   const { user, initialized } = useAuth();
 
   if (!initialized) return null;
-  if (user) return <Navigate to={`/${user.role}`} replace />;
+
+  if (user && user.role) {
+    return <Navigate to={`/${user.role}`} replace />;
+  }
 
   return children;
 }
 
 
+// ------------------------------------------------------
+// 2. PRIVATE ROUTE — protects admin/vendor/customers
+// ------------------------------------------------------
 function PrivateRoute({ children, role }) {
   const { user, initialized } = useAuth();
 
   if (!initialized) return null;
 
   if (!user) return <Navigate to="/login" replace />;
-  if (role && user.role !== role) return <Navigate to="/" replace />;
+
+  if (role && user.role !== role) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 }
 
 
+// ------------------------------------------------------
+// 3. FINAL ROUTE TREE (cleaned & safe)
+// ------------------------------------------------------
 export default function AppRouter() {
   return (
     <Routes>
+
+      {/* Public */}
       <Route path="/" element={<Home />} />
 
-
+      {/* Login + Register (blocked when logged in) */}
       <Route
         path="/login"
         element={
@@ -60,7 +75,6 @@ export default function AppRouter() {
           </BlockWhenLoggedIn>
         }
       />
-
       <Route
         path="/register"
         element={
@@ -70,17 +84,27 @@ export default function AppRouter() {
         }
       />
 
-      <Route path="/profile" element={<Profile />} />
+      {/* Profile (user must be logged in, but any role allowed) */}
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
 
+      {/* Auth flows */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/otp-verify" element={<OTPVerify />} />
 
+      {/* MFA */}
       <Route path="/mfa/verify" element={<VerifyMFA />} />
       <Route path="/mfa/enable" element={<EnableMFA />} />
       <Route path="/mfa/confirm" element={<ConfirmMFA />} />
 
-
+      {/* Admin (FULL admin area inside /admin/* ) */}
       <Route
         path="/admin/*"
         element={
@@ -90,8 +114,9 @@ export default function AppRouter() {
         }
       />
 
+      {/* Vendor */}
       <Route
-        path="/vendor"
+        path="/vendor/*"
         element={
           <PrivateRoute role="vendor">
             <VendorDashboard />
@@ -99,13 +124,14 @@ export default function AppRouter() {
         }
       />
 
-
+      {/* Customer placeholder */}
       <Route path="/customer" element={<Navigate to="/" replace />} />
 
-
+      {/* OAuth */}
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route path="/auth/microsoft/callback" element={<MicrosoftCallback />} />
 
+      {/* 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   );

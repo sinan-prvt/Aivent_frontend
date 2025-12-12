@@ -1,14 +1,12 @@
-import React from 'react';
+// src/modules/dashboard/admin/pages/Settings.jsx
+import React from "react";
 
 export default function Settings() {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-800">Settings</h2>
-        <p className="text-gray-600 mt-2">Configure your admin settings</p>
-      </div>
-      <div className="bg-white rounded-xl shadow border border-gray-200 p-6">
-        <p className="text-gray-500">Settings configuration coming soon...</p>
+      <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      <div className="bg-white rounded-xl p-6 shadow">
+        <p className="text-gray-600">Site and admin settings — add forms here (e.g., branding, security, roles).</p>
       </div>
     </div>
   );
