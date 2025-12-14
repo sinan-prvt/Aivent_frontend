@@ -42,8 +42,8 @@ export default function Navbar() {
             Vendors
           </NavLink>
 
-          <NavLink to="/plans" className={linkClass}>
-            Plans
+          <NavLink to="/vendor/register" className={linkClass}>
+            Business
           </NavLink>
         </div>
 

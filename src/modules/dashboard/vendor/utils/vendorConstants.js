@@ -1,0 +1,4 @@
+export const VENDOR_STATUS = {
+  OTP_PENDING: "OTP_PENDING",
+  VERIFIED: "VERIFIED",
+};
