@@ -1,37 +1,36 @@
-// src/modules/dashboard/admin/api/adminApi.js
-import axios from "./axiosInstance";
+import api from "@/core/api/axios";
 
-// Users
 export async function fetchUsers(params = {}) {
-  // params: { page, page_size, search, role, status }
-  const { data } = await axios.get("/users", { params });
-  // normalize: try to support different backend shapes
+  const { data } = await api.get("/admin-api/users/", { params });
   return data;
 }
 
 export async function fetchUserDetails(userId) {
-  const { data } = await axios.get(`/users/${userId}`);
+  const { data } = await api.get(`/admin-api/users/${userId}/`);
   return data;
 }
 
 export async function updateUser(userId, body) {
-  const { data } = await axios.put(`/users/${userId}`, body);
+  const { data } = await api.patch(`/admin-api/users/${userId}/`, body);
   return data;
 }
 
-// Example actions
-export async function approveVendor(userId) {
-  const { data } = await axios.post(`/users/${userId}/approve_vendor`);
+export async function approveVendor(userId, action = "approve") {
+  const { data } = await api.patch(
+    `/admin-api/users/${userId}/approve-vendor/`,
+    { action }
+  );
   return data;
 }
 
 export async function revokeTokens(userId) {
-  const { data } = await axios.post(`/users/${userId}/revoke_tokens`);
+  const { data } = await api.post(
+    `/admin-api/users/${userId}/revoke-tokens/`
+  );
   return data;
 }
 
-// Metrics
 export async function fetchDashboardMetrics() {
-  const { data } = await axios.get("/metrics");
+  const { data } = await api.get("/admin-api/metrics/");
   return data;
 }

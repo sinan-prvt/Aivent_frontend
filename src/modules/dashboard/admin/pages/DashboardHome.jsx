@@ -19,13 +19,20 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function DashboardHome() {
-  const [metrics, setMetrics] = useState(null);
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
   const [revenueStats, setRevenueStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('today');
-
+  const [metrics, setMetrics] = useState({
+    avg_session_duration: 0,
+    bounce_rate: 0,
+    new_users: 0,
+    returning_users: 0,
+    server_load: 0,
+    uptime: 0,
+  });
+  
   useEffect(() => {
     loadDashboardData();
   }, [timeRange]);

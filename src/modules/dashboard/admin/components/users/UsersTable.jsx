@@ -172,7 +172,14 @@ export default function UsersTable({ users, refresh, onUserClick }) {
                   <div className="flex items-center gap-2">
                     {user.role === "vendor" && !user.vendor_approved && (
                       <button
-                        onClick={(e) => handleAction(user.id, approveVendor, "approve", e)}
+                        onClick={(e) =>
+                          handleAction(
+                            user.id,
+                            (id) => approveVendor(id, "approve"),
+                            "approve",
+                            e
+                          )
+                        }
                         disabled={actionLoading[user.id] === "approve"}
                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >

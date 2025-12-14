@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import UserDetailsModal from "./UserDetailsModal";
 import { fetchUsers } from "../../api/adminApi";
+import { normalizeUser } from "../../utils/normalizeUser";
 
 export default function UsersManagement() {
   const [users, setUsers] = useState([]);
@@ -15,34 +16,49 @@ export default function UsersManagement() {
     loadUsers();
   }, []);
 
-  async function loadUsers() {
-    try {
-      const res = await fetchUsers();
-      setUsers(res.results || res.data || []);
-    } catch (err) {
-      console.error("User load failed:", err);
-    } finally {
-      setLoading(false);
-    }
+async function loadUsers() {
+  try {
+    setLoading(true);
+
+    const res = await fetchUsers();
+
+    // DRF paginated response safety
+    const rawUsers = Array.isArray(res?.results)
+      ? res.results
+      : Array.isArray(res)
+      ? res
+      : [];
+
+    setUsers(rawUsers.map(normalizeUser));
+  } catch (err) {
+    console.error("User load failed:", err);
+    setUsers([]);
+  } finally {
+    setLoading(false);
   }
+}
+
 
   const handleUserClick = (userId) => {
     setSelectedUserId(userId);
     setShowUserModal(true);
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+const filteredUsers = users.filter(user => {
+  const matchesSearch =
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+  const matchesRole =
+    roleFilter === "all" || user.role === roleFilter;
+
+  const matchesStatus =
+    statusFilter === "all" || user.status === statusFilter;
+
+  return matchesSearch && matchesRole && matchesStatus;
+});
+
 
   // Calculate stats
   const userStats = {
@@ -51,7 +67,7 @@ export default function UsersManagement() {
     suspended: users.filter(u => u.status === 'suspended').length,
     admin: users.filter(u => u.role === 'admin').length,
     vendor: users.filter(u => u.role === 'vendor').length,
-    regular: users.filter(u => u.role === 'user').length,
+    regular: users.filter(u => u.role === 'customer').length,
   };
 
   return (
@@ -174,7 +190,7 @@ export default function UsersManagement() {
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
               <option value="vendor">Vendor</option>
-              <option value="user">Regular User</option>
+              <option value="customer">Customer</option>
             </select>
           </div>
 
@@ -260,9 +276,7 @@ export default function UsersManagement() {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {user.firstName && user.lastName 
-                              ? `${user.firstName} ${user.lastName}`
-                              : user.username || user.email?.split('@')[0]}
+                            {user.fullName || user.username || user.email}
                           </div>
                           <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
@@ -289,12 +303,9 @@ export default function UsersManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.lastLoginAt 
-                        ? new Date(user.lastLoginAt).toLocaleDateString() 
-                        : 'Never'}
+                      {user.dateJoined
+                        ? new Date(user.dateJoined).toLocaleDateString()
+                        : "N/A"}
                     </td>
                   </tr>
                 ))}
