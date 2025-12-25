@@ -75,7 +75,7 @@ export default function VerifyMFA() {
 
       if (user?.role === "vendor") navigate("/vendor", { replace: true });
       else if (user?.role === "admin") navigate("/admin", { replace: true });
-      else navigate("/customer", { replace: true });
+      else navigate("/", { replace: true });
     } catch (err) {
       const parsed = parseErrors(err);
       const { non_field_errors, ...fieldErrors } = parsed;

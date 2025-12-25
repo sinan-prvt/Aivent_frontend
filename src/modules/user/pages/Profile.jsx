@@ -28,10 +28,13 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { logoutEverywhere } from "@/core/auth/logoutEverywhere";
+import { useMe } from "../hooks/useMe";
 
 
 export default function Profile() {
   const { profile, loading, saveProfile, saving } = useProfile();
+  const { data: me } = useMe();
+
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -452,11 +455,11 @@ export default function Profile() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Email Verified</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    profile?.email_verified 
+                    me?.email_verified
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {profile?.email_verified ? 'Verified' : 'Pending'}
+                    {me?.email_verified ? 'Verified' : 'Pending'}
                   </span>
                 </div>
                 
@@ -464,11 +467,11 @@ export default function Profile() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Vendor Approval</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      profile?.vendor_approved 
+                      me?.vendor_approved
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {profile?.vendor_approved ? 'Approved' : 'Pending'}
+                      {me?.vendor_approved ? 'Approved' : 'Pending'}
                     </span>
                   </div>
                 )}
@@ -476,11 +479,11 @@ export default function Profile() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Account Status</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    profile?.is_active 
+                    me?.is_active
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {profile?.is_active ? 'Active' : 'Inactive'}
+                    {me?.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </div>
@@ -986,7 +989,7 @@ export default function Profile() {
                   <div>
                     <p className="text-sm text-gray-600">Email Status</p>
                     <p className="text-lg font-bold text-gray-900">
-                      {profile?.email_verified ? 'Verified' : 'Not Verified'}
+                      {me?.email_verified ? 'Verified' : 'Not Verified'}
                     </p>
                   </div>
                 </div>

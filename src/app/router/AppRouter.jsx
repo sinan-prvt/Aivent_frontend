@@ -46,10 +46,13 @@ function BlockWhenLoggedIn({ children }) {
   const { user, initialized } = useAuth();
   if (!initialized) return null;
 
-  if (user?.role && user.role !== "vendor") {
-    return <Navigate to={`/${user.role}`} replace />;
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
   }
 
+  if (user?.role === "customer") {
+    return <Navigate to="/" replace />;
+  }
   return children;
 }
 
