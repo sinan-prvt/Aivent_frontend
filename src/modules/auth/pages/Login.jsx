@@ -4,54 +4,62 @@ import { login } from "../api/auth.api";
 import { useAuth } from "../../../app/providers/AuthProvider";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const handleSubmit = async (e) => {
-    e?.preventDefault?.();
+    e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const res = await login(formData);
+      const payload = res.data;
 
-      const access = res.data?.data?.access;
-      const refresh = res.data?.data?.refresh;
-      const userObj = res.data?.data?.user;
+      console.log("Login payload:", payload);
 
-      if (!access || !refresh || !userObj) {
-        const altAccess = res.data?.access || res.data?.data?.access;
-        const altRefresh = res.data?.refresh || res.data?.data?.refresh;
-        const altUser = res.data?.user || res.data?.data?.user;
-        if (altAccess && altRefresh && altUser) {
-          authLogin(altAccess, altRefresh, altUser);
+      // 🔐 MFA FLOW
+      if (payload.mfa_required === true) {
+        sessionStorage.setItem("mfa_payload", JSON.stringify(payload));
+
+        if (payload.mfa_setup === true) {
+          navigate("/vendor/mfa-setup", { replace: true });
         } else {
-          throw new Error("Invalid login response");
+          navigate("/vendor/mfa", { replace: true });
         }
-      } else {
-        authLogin(access, refresh, userObj);
+        return;
       }
 
-      const role = userObj?.role;
-      if (role === "admin") navigate("/admin");
-      else if (role === "vendor") navigate("/vendor");
-      else navigate("/");
+      // ⏳ Vendor pending
+      if (payload.detail === "Vendor approval pending") {
+        navigate("/vendor/pending", { replace: true });
+        return;
+      }
+
+      // ✅ Normal login
+      const tokens = payload.data ?? payload;
+      const { access, refresh, user } = tokens;
+
+      authLogin(access, refresh, user);
+
+      if (user.role === "vendor") navigate("/vendor/dashboard", { replace: true });
+      else if (user.role === "admin") navigate("/admin", { replace: true });
+      else navigate("/", { replace: true });
 
     } catch (err) {
-      console.error("LOGIN ERROR:", err?.response?.data || err);
-      alert(JSON.stringify(err.response?.data || err.message, null, 2));
+      alert(err.response?.data?.detail || "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
+
+
 
   return (
     <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center px-4">

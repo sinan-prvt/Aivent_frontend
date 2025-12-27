@@ -19,25 +19,19 @@ import GoogleCallback from "../../modules/auth/pages/GoogleCallback";
 import MicrosoftCallback from "../../modules/auth/pages/MicrosoftCallback";
 
 /* Admin */
-import AdminDashboard from "../../modules/dashboard/admin/pages/AdminDashboard";
+import AdminDashboard from "../../modules/admin/pages/AdminDashboard";
+import VendorApply from "../../modules/vendor/pages/VendorApply";
+import VendorMFASetup from "../../modules/vendor/pages/VendorMFASetup.jsx";
+import VendorVerifyOTP from "../../modules/vendor/pages/VendorVerifyOTP";
+import VendorPending from "../../modules/vendor/pages/VendorPending.jsx";
+import VendorVerifyMFA from "../../modules/vendor/pages/VendorVerifyMFA.jsx";
+import VendorLayout from "../../modules/vendor/layout/VendorLayout.jsx";
+import VendorDashboardHome from "../../modules/vendor/dashboard/VendorDashboardHome.jsx";
+import VendorAuthGuard from "../../modules/vendor/guards/VendorAuthGuard.jsx";
+import VendorMFAGuard from "../../modules/vendor/guards/VendorMFAGuard.jsx";
+import VendorApprovedGuard from "../../modules/vendor/guards/VendorApprovedGuard.jsx";
 
 /* Vendor */
-import VendorRegister from "../../modules/dashboard/vendor/pages/auth/VendorRegister";
-import VendorVerifyOTP from "../../modules/dashboard/vendor/pages/auth/VendorVerifyOTP";
-import VendorLogin from "../../modules/dashboard/vendor/pages/auth/VendorLogin";
-import VendorMFAVerify from "../../modules/dashboard/vendor/pages/auth/VendorMFAVerify";
-import VendorPendingApproval from "../../modules/dashboard/vendor/pages/status/VendorPendingApproval";
-
-import VendorDashboardLayout from "../../modules/dashboard/vendor/layouts/VendorDashboardLayout";
-import VendorDashboardHome from "../../modules/dashboard/vendor/pages/dashboard/VendorDashboardHome";
-import VendorProfile from "../../modules/dashboard/vendor/pages/dashboard/VendorProfile";
-import VendorSettings from "../../modules/dashboard/vendor/pages/dashboard/VendorSettings";
-
-/* Vendor Guards */
-import VendorAuthGuard from "../../modules/dashboard/vendor/guards/VendorAuthGuard";
-import VendorMFAGuard from "../../modules/dashboard/vendor/guards/VendorMFAGuard";
-import VendorApprovedGuard from "../../modules/dashboard/vendor/guards/VendorApprovedGuard";
-
 
 // ------------------------------------------------------
 // Block login/register ONLY if logged in (user/admin)
@@ -128,31 +122,29 @@ export default function AppRouter() {
         }
       />
 
-      {/* ---------------- VENDOR PUBLIC ---------------- */}
-      <Route path="/vendor/register" element={<VendorRegister />} />
-      <Route path="/vendor/verify-otp" element={<VendorVerifyOTP />} />
-      <Route path="/vendor/login" element={<VendorLogin />} />
-      <Route path="/vendor/mfa" element={<VendorMFAVerify />} />
-      <Route path="/vendor/pending" element={<VendorPendingApproval />} />
 
-      {/* ---------------- VENDOR DASHBOARD ---------------- */}
-      <Route
-        path="/vendor/dashboard"
-        element={
-          <VendorAuthGuard>
-            <VendorMFAGuard>
-              <VendorApprovedGuard>
-                <VendorDashboardLayout />
-              </VendorApprovedGuard>
-            </VendorMFAGuard>
-          </VendorAuthGuard>
-        }
-      >
-        <Route index element={<VendorDashboardHome />} />
-        <Route path="profile" element={<VendorProfile />} />
-        <Route path="settings" element={<VendorSettings />} />
-      </Route>
 
+      <Route path="/vendor/apply" element={<VendorApply />} />
+<Route path="/vendor/verify-otp" element={<VendorVerifyOTP />} />
+<Route path="/vendor/pending" element={<VendorPending />} />
+<Route path="/vendor/mfa-setup" element={<VendorMFASetup />} />
+<Route path="/vendor/mfa" element={<VendorVerifyMFA />} />
+
+<Route
+  path="/vendor/dashboard"
+  element={
+    <VendorAuthGuard>
+      <VendorMFAGuard>
+        <VendorApprovedGuard>
+          <VendorLayout />
+        </VendorApprovedGuard>
+      </VendorMFAGuard>
+    </VendorAuthGuard>
+  }
+>
+  <Route index element={<VendorDashboardHome />} />
+</Route>
+      
       {/* 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />
 
