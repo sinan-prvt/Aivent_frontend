@@ -18,9 +18,9 @@
 
     const goToDashboard = () => {
       if (!user) return navigate("/login");
-      if (user.role === "admin") return navigate("/admin");
-      if (user.role === "vendor") return navigate("/vendor");
-      return navigate("/");
+      if (user.role === "admin") return navigate("/admin", { replace: true });
+      if (user.role === "vendor") return navigate("/vendor/dashboard", { replace: true });
+      return navigate("/", { replace: true });
     };
 
     const handleStartPlanning = (e) => {

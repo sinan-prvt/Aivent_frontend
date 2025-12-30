@@ -5,8 +5,10 @@ import {
   saveRefreshToken,
   clearTokens,
 } from "../../core/utils/token";
+import { fetchMe } from "../../core/api/axios";
 
 export const AuthContext = createContext(null);
+
 
 function makeDisplayName(user) {
   if (!user) return null;
@@ -19,22 +21,48 @@ export default function AuthProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("user");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.email) {
-          // ensure displayName exists
-          parsed.displayName = makeDisplayName(parsed);
-          setUser(parsed);
-        }
-      }
-    } catch (e) {
-      console.error("Invalid user JSON:", e);
+  const initAuth = async () => {
+    // 1️⃣ Restore cached user immediately
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {}
     }
 
-    setInitialized(true);
-  }, []);
+    // 2️⃣ Token logic
+    const token = getAccessToken();
+    const skipMeOnce = sessionStorage.getItem("skip_me_once");
+
+    // 3️⃣ Skip /auth/me ONCE (after MFA)
+    if (!token || skipMeOnce) {
+      sessionStorage.removeItem("skip_me_once");
+      setInitialized(true);
+      return;
+    }
+
+    // 4️⃣ Validate token
+    try {
+      const res = await fetchMe();
+      const u = {
+        ...res.data,
+        displayName: makeDisplayName(res.data),
+      };
+      setUser(u);
+      localStorage.setItem("user", JSON.stringify(u));
+    } catch {
+      clearTokens();
+      localStorage.removeItem("user");
+      setUser(null);
+    } finally {
+      setInitialized(true);
+    }
+  };
+
+  initAuth();
+}, []);
+
+
 
   useEffect(() => {
     const handleForceLogout = () => {

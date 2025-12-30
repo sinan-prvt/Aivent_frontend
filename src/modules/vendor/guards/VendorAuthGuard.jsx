@@ -1,15 +1,18 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../../../app/providers/AuthProvider";
 
-export default function VendorAuthGuard({ children }) {
+export default function VendorAuthGuard() {
   const { user, initialized } = useAuth();
 
   if (!initialized) return null;
 
-  if (!user && !sessionStorage.getItem("mfa_payload")) {
-  return <Navigate to="/login" replace />;
-}
-  if (user.role !== "vendor") return <Navigate to="/" replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-  return children;
+  if (user.role !== "vendor") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 }

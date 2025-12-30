@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 /* Public */
@@ -28,8 +28,8 @@ import VendorVerifyMFA from "../../modules/vendor/pages/VendorVerifyMFA.jsx";
 import VendorLayout from "../../modules/vendor/layout/VendorLayout.jsx";
 import VendorDashboardHome from "../../modules/vendor/dashboard/VendorDashboardHome.jsx";
 import VendorAuthGuard from "../../modules/vendor/guards/VendorAuthGuard.jsx";
-import VendorMFAGuard from "../../modules/vendor/guards/VendorMFAGuard.jsx";
 import VendorApprovedGuard from "../../modules/vendor/guards/VendorApprovedGuard.jsx";
+import PublicLayout from "../../components/layout/PublicLayout.jsx";
 
 /* Vendor */
 
@@ -40,27 +40,41 @@ function BlockWhenLoggedIn({ children }) {
   const { user, initialized } = useAuth();
   if (!initialized) return null;
 
-  if (user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
+  if (user?.role === "admin") return <Navigate to="/admin" replace />;
+  if (user?.role === "vendor" && user?.mfa_verified !== false) {
+    return <Navigate to="/vendor/dashboard" replace />;
   }
+  if (user?.role === "customer") return <Navigate to="/" replace />;
 
-  if (user?.role === "customer") {
-    return <Navigate to="/" replace />;
-  }
   return children;
 }
-
 
 // ------------------------------------------------------
 // PrivateRoute for USER + ADMIN only
 // ------------------------------------------------------
 function PrivateRoute({ children, role }) {
   const { user, initialized } = useAuth();
+  const location = useLocation();
+
   if (!initialized) return null;
+
+  // ✅ ALLOW MFA ROUTES WITHOUT USER
+  if (
+    location.pathname === "/vendor/mfa" ||
+    location.pathname === "/vendor/mfa-setup"
+  ) {
+    return children;
+  }
 
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
 
+  return children;
+}
+
+function MFARoute({ children }) {
+  const payload = sessionStorage.getItem("mfa_payload");
+  if (!payload) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -69,29 +83,28 @@ function PrivateRoute({ children, role }) {
 // FINAL ROUTES
 // ------------------------------------------------------
 export default function AppRouter() {
+
+  const { user, initialized } = useAuth();
+  if (!initialized) return null;
+
   return (
     <Routes>
 
-      {/* Public */}
-      <Route path="/" element={<Home />} />
-
-      {/* User login/register */}
-      <Route
-        path="/login"
-        element={
-          <BlockWhenLoggedIn>
-            <Login />
-          </BlockWhenLoggedIn>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <BlockWhenLoggedIn>
-            <Register />
-          </BlockWhenLoggedIn>
-        }
-      />
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={user?.role === "vendor"
+          ? <Navigate to="/vendor/dashboard" replace />
+          : <Home />}
+        />
+        <Route
+          path="/login"
+          element={
+            <BlockWhenLoggedIn>
+              <Login />
+            </BlockWhenLoggedIn>
+          }
+        />
+        <Route path="/register" element={<Register />} />
+      </Route>
 
       {/* User profile */}
       <Route
@@ -125,25 +138,42 @@ export default function AppRouter() {
 
 
       <Route path="/vendor/apply" element={<VendorApply />} />
-<Route path="/vendor/verify-otp" element={<VendorVerifyOTP />} />
-<Route path="/vendor/pending" element={<VendorPending />} />
-<Route path="/vendor/mfa-setup" element={<VendorMFASetup />} />
-<Route path="/vendor/mfa" element={<VendorVerifyMFA />} />
+      <Route path="/vendor/verify-otp" element={<VendorVerifyOTP />} />
+      
 
-<Route
-  path="/vendor/dashboard"
-  element={
-    <VendorAuthGuard>
-      <VendorMFAGuard>
-        <VendorApprovedGuard>
-          <VendorLayout />
-        </VendorApprovedGuard>
-      </VendorMFAGuard>
-    </VendorAuthGuard>
-  }
->
-  <Route index element={<VendorDashboardHome />} />
-</Route>
+        {/* ✅ MFA ROUTES — NO GUARDS */}
+      <Route
+        path="/vendor/mfa-setup"
+        element={
+          <MFARoute>
+            <VendorMFASetup />
+          </MFARoute>
+        }
+      />
+
+      <Route
+        path="/vendor/mfa"
+        element={
+          <MFARoute>
+            <VendorVerifyMFA />
+          </MFARoute>
+        }
+      />
+          
+      <Route path="/vendor" element={<VendorAuthGuard />}>
+        <Route path="pending" element={<VendorPending />} />
+
+        <Route
+          path="dashboard"
+          element={
+            <VendorApprovedGuard>
+              <VendorLayout />
+            </VendorApprovedGuard>
+          }
+        >
+          <Route index element={<VendorDashboardHome />} />
+        </Route>
+      </Route>
       
       {/* 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />

@@ -28,9 +28,9 @@ export default function GoogleCallback() {
 
         login(access, refresh, user);
 
-        if (user.role === "admin") navigate("/admin");
-        else if (user.role === "vendor") navigate("/vendor");
-        else navigate("/");
+        if (user.role === "admin") navigate("/admin", { replace: true });
+        else if (user.role === "vendor") navigate("/vendor/dashboard", { replace: true });
+        else navigate("/", { replace: true });
 
       } catch (err) {
         console.error(err);

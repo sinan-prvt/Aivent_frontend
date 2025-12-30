@@ -10,7 +10,4 @@ export const AUTH = {
   LOGOUT_ALL: "/auth/logout-all/",
   CHANGE_PASSWORD: "/auth/change-password/",
 
-  ENABLE_MFA: "/auth/enable-mfa/",
-  CONFIRM_MFA: "/auth/confirm-enable-mfa/",
-  DISABLE_MFA: "/auth/disable-mfa/",
 };

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyVendorMFA } from "../api/vendor.api";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { saveAccessToken, saveRefreshToken } from "@/core/utils/token";
+import { fetchMe } from "@/core/api/axios";
 
 export default function VendorVerifyMFA() {
   const [code, setCode] = useState("");
@@ -9,50 +11,61 @@ export default function VendorVerifyMFA() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // 🔐 Read MFA payload ONCE
   const raw = sessionStorage.getItem("mfa_payload");
-  if (!raw) {
-    navigate("/login", { replace: true });
-    return null;
-  }
+  const payload = raw ? JSON.parse(raw) : null;
 
-  let payload;
-  try {
-    payload = JSON.parse(raw);
-  } catch {
-    navigate("/login", { replace: true });
-    return null;
-  }
+  // ✅ ONLY REQUIRE mfa_token
+  useEffect(() => {
+    if (!payload?.mfa_token) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate, payload]);
 
-  // 🚫 This page is ONLY for normal MFA
-  if (payload.mfa_setup !== false || !payload.mfa_token) {
-    navigate("/login", { replace: true });
-    return null;
-  }
+  if (!payload?.mfa_token) return null;
 
   const submit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (code.length !== 6) {
-      setError("Enter valid 6-digit code");
-      return;
-    }
+  if (code.length !== 6) {
+    setError("Enter 6 digit code");
+    return;
+  }
 
-    try {
-      const res = await verifyVendorMFA({
-        mfa_token: payload.mfa_token,
-        code,
-      });
+  try {
+    const res = await verifyVendorMFA({
+      mfa_token: payload.mfa_token.trim(),
+      code: code.trim(),
+    });
 
-      login(res.data.access, res.data.refresh, res.data.user);
+    // 1️⃣ Save tokens
+    saveAccessToken(res.data.access);
+    saveRefreshToken(res.data.refresh);
 
-      sessionStorage.removeItem("mfa_payload");
+    // 2️⃣ Fetch user explicitly
+    const me = await fetchMe();
 
-      navigate("/vendor/dashboard", { replace: true });
-    } catch (err) {
-      setError(err.response?.data?.detail || "Invalid MFA code");
-    }
-  };
+    // 3️⃣ Login with real user
+    login(res.data.access, res.data.refresh, me.data);
+
+    // 4️⃣ Cleanup MFA state
+    sessionStorage.removeItem("mfa_payload");
+    sessionStorage.setItem("skip_me_once", "1");
+
+    // 5️⃣ Redirect
+    navigate("/vendor/dashboard", { replace: true });
+
+  } catch (err) {
+    console.error("MFA Verify Error:", err);
+    setError(
+      err.response?.data?.detail ||
+      err.message ||
+      "Invalid MFA code"
+    );
+  }
+};
+
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">

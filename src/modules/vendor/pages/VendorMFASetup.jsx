@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyVendorMFA } from "../api/vendor.api";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { saveAccessToken, saveRefreshToken } from "@/core/utils/token";
+import { fetchMe } from "@/core/api/axios";
 
 const VendorMFASetup = () => {
   const navigate = useNavigate();
@@ -16,17 +18,11 @@ const VendorMFASetup = () => {
       return;
     }
 
-    let payload;
-    try {
-      payload = JSON.parse(raw);
-    } catch {
-      navigate("/login", { replace: true });
-      return;
-    }
+    const payload = JSON.parse(raw);
 
-    // 🚫 Setup page ONLY for first-time MFA
-    if (payload.mfa_setup !== true) {
-      navigate("/vendor/mfa", { replace: true });
+    // ✅ SETUP REQUIRES qr_code + mfa_token
+    if (!payload.mfa_token || !payload.qr_code) {
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -34,23 +30,47 @@ const VendorMFASetup = () => {
   }, [navigate]);
 
   const handleVerify = async () => {
-    if (code.length !== 6) return alert("Enter valid code");
+    if (code.length !== 6) {
+      alert("Enter 6 digit code");
+      return;
+    }
 
-    const payload = JSON.parse(sessionStorage.getItem("mfa_payload"));
+    const raw = sessionStorage.getItem("mfa_payload");
+    if (!raw) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    const payload = JSON.parse(raw);
+    console.log("🔵 MFA Setup - Payload:", payload);
+    console.log("🔵 MFA Setup - Code:", code);
 
     try {
-      const res = await verifyVendorMFA({
-        mfa_token: payload.mfa_token,
-        code,
-      });
+      const requestPayload = {
+        mfa_token: payload.mfa_token.trim(),
+        code: code.trim(),
+      };
+      console.log("🔵 MFA Setup - Request:", requestPayload);
 
-      login(res.data.access, res.data.refresh, res.data.user);
+      const res = await verifyVendorMFA(requestPayload);
+      console.log("🔵 MFA Setup - Response:", res);
+      console.log("🔵 MFA Setup - Response data:", res.data);
 
+      sessionStorage.setItem("skip_me_once", "1");
+
+      saveAccessToken(res.data.access);
+      saveRefreshToken(res.data.refresh);
+
+      // Force fetch user
+      const me = await fetchMe();
+      login(res.data.access, res.data.refresh, me.data);
       sessionStorage.removeItem("mfa_payload");
 
       navigate("/vendor/dashboard", { replace: true });
     } catch (err) {
-      alert(err.response?.data?.detail || "MFA setup failed");
+      console.error("🔴 MFA Setup - Error:", err);
+      console.error("🔴 MFA Setup - Error response:", err.response);
+      alert(err.response?.data?.detail || err.message || "Invalid MFA code");
     }
   };
 

@@ -15,6 +15,7 @@ import {
   Users,
   BarChart
 } from "lucide-react";
+import { useAuth } from "../../../app/providers/AuthProvider";
 
 export default function VendorPending() {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ export default function VendorPending() {
       const response = await getVendorStatus();
       const status = response?.data?.status;
       if (status === "approved") {
-        navigate("/vendor/dashboard");
+        navigate("/vendor/dashboard", { replace: true });
       } else {
         alert("Your application is still pending approval. You'll receive an email once it's approved.");
       }
@@ -89,12 +90,12 @@ export default function VendorPending() {
     }
   };
 
+  const { logout } = useAuth();
+
   const handleLogout = () => {
-    // Clear session data
-    sessionStorage.removeItem("vendor_id");
-    sessionStorage.removeItem("vendor_email");
-    sessionStorage.removeItem("apply_time");
-    navigate("/");
+    logout(); // clears tokens + user
+    sessionStorage.clear();
+    navigate("/login", { replace: true });
   };
 
   const pendingSteps = [

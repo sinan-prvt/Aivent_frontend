@@ -10,31 +10,52 @@ const Login = () => {
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
+
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🔵 Login form submitted");
     setIsLoading(true);
 
+    sessionStorage.removeItem("mfa_payload");
+
     try {
+      console.log("🔵 Calling login API with:", formData.email);
       const res = await login(formData);
+      console.log("🔵 Login API response received");
       const payload = res.data;
 
-      console.log("Login payload:", payload);
+      console.log("🔵 Login response:", res);
+      console.log("🔵 Login payload:", payload);
+      console.log("🔵 MFA required:", payload.mfa_required);
+      console.log("🔵 MFA setup:", payload.mfa_setup);
 
-      // 🔐 MFA FLOW
+      // 🔐 MFA FLOW - Backend returns mfa_token, mfa_setup, qr_code directly on payload
       if (payload.mfa_required === true) {
-        sessionStorage.setItem("mfa_payload", JSON.stringify(payload));
+        const mfaPayload = {
+          mfa_token: payload.mfa_token,
+          mfa_setup: payload.mfa_setup === true,
+          qr_code: payload.qr_code || null,
+        };
+        console.log("🔵 MFA Token:", mfaPayload.mfa_token);
+        console.log("🔵 QR Code Present:", !!mfaPayload.qr_code);
 
-        if (payload.mfa_setup === true) {
-          navigate("/vendor/mfa-setup", { replace: true });
-        } else {
-          navigate("/vendor/mfa", { replace: true });
-        }
+        // 🔥 CRITICAL FIX
+        localStorage.removeItem("user");
+
+        sessionStorage.setItem("mfa_payload", JSON.stringify(mfaPayload));
+
+        navigate(
+          payload.mfa_setup ? "/vendor/mfa-setup" : "/vendor/mfa",
+          { replace: true }
+        );
+
         return;
       }
+
 
       // ⏳ Vendor pending
       if (payload.detail === "Vendor approval pending") {
@@ -53,7 +74,10 @@ const Login = () => {
       else navigate("/", { replace: true });
 
     } catch (err) {
-      alert(err.response?.data?.detail || "Login failed");
+      console.error("🔴 Login Error:", err);
+      console.error("🔴 Login Error Response:", err.response);
+      console.error("🔴 Login Error Data:", err.response?.data);
+      alert(err.response?.data?.detail || err.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -192,10 +216,10 @@ const Login = () => {
                 disabled={isLoading}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23">
-                  <rect width="10" height="10" x="1" y="1" fill="#F25022"/>
-                  <rect width="10" height="10" x="12" y="1" fill="#7FBA00"/>
-                  <rect width="10" height="10" x="1" y="12" fill="#00A4EF"/>
-                  <rect width="10" height="10" x="12" y="12" fill="#FFB900"/>
+                  <rect width="10" height="10" x="1" y="1" fill="#F25022" />
+                  <rect width="10" height="10" x="12" y="1" fill="#7FBA00" />
+                  <rect width="10" height="10" x="1" y="12" fill="#00A4EF" />
+                  <rect width="10" height="10" x="12" y="12" fill="#FFB900" />
                 </svg>
               </button>
             </div>
