@@ -2,12 +2,15 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 /* Public */
-import Home from "../../modules/auth/pages/Home";
+import Home from "../../modules/user/pages/Home";
+import CategoryProducts from "../../modules/user/pages/CategoryProducts";
+import ProductDetail from "../../modules/user/pages/ProductDetail";
 
 /* User auth */
 import Login from "../../modules/auth/pages/Login";
 import Register from "../../modules/auth/pages/Register";
 import Profile from "@/modules/user/pages/Profile";
+import PlanEvent from "../../modules/user/pages/PlanEvent";
 
 /* Auth utilities */
 import ForgotPassword from "../../modules/auth/pages/ForgotPassword";
@@ -25,6 +28,9 @@ import VendorMFASetup from "../../modules/vendor/pages/VendorMFASetup.jsx";
 import VendorVerifyOTP from "../../modules/vendor/pages/VendorVerifyOTP";
 import VendorPending from "../../modules/vendor/pages/VendorPending.jsx";
 import VendorVerifyMFA from "../../modules/vendor/pages/VendorVerifyMFA.jsx";
+import VendorProducts from "../../modules/vendor/pages/VendorProducts";
+import VendorCreateProduct from "../../modules/vendor/pages/VendorCreateProduct";
+import VendorEditProduct from "../../modules/vendor/pages/VendorEditProduct";
 import VendorLayout from "../../modules/vendor/layout/VendorLayout.jsx";
 import VendorDashboardHome from "../../modules/vendor/dashboard/VendorDashboardHome.jsx";
 import VendorAuthGuard from "../../modules/vendor/guards/VendorAuthGuard.jsx";
@@ -95,6 +101,8 @@ export default function AppRouter() {
           ? <Navigate to="/vendor/dashboard" replace />
           : <Home />}
         />
+        <Route path="/categories/:slug" element={<CategoryProducts />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route
           path="/login"
           element={
@@ -112,6 +120,14 @@ export default function AppRouter() {
         element={
           <PrivateRoute>
             <Profile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/dashboard/plan"
+        element={
+          <PrivateRoute>
+            <PlanEvent />
           </PrivateRoute>
         }
       />
@@ -139,9 +155,9 @@ export default function AppRouter() {
 
       <Route path="/vendor/apply" element={<VendorApply />} />
       <Route path="/vendor/verify-otp" element={<VendorVerifyOTP />} />
-      
 
-        {/* ✅ MFA ROUTES — NO GUARDS */}
+
+      {/* ✅ MFA ROUTES — NO GUARDS */}
       <Route
         path="/vendor/mfa-setup"
         element={
@@ -159,7 +175,7 @@ export default function AppRouter() {
           </MFARoute>
         }
       />
-          
+
       <Route path="/vendor" element={<VendorAuthGuard />}>
         <Route path="pending" element={<VendorPending />} />
 
@@ -172,9 +188,14 @@ export default function AppRouter() {
           }
         >
           <Route index element={<VendorDashboardHome />} />
+
+          {/* Product Management */}
+          <Route path="products" element={<VendorProducts />} />
+          <Route path="products/create" element={<VendorCreateProduct />} />
+          <Route path="products/:id/edit" element={<VendorEditProduct />} />
         </Route>
       </Route>
-      
+
       {/* 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />
 

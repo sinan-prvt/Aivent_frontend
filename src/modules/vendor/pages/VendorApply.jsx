@@ -26,12 +26,17 @@ export default function VendorApply() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // TEMP categories (later replace with API)
+  // Categories based on user input
   const categories = [
-    { id: 1, name: "Restaurant & Food" },
-    { id: 2, name: "Decor & Events" },
-    { id: 3, name: "Photography" },
-    { id: 4, name: "DJ & Music" },
+    { id: 1, name: "Venue & Infrastructure" },
+    { id: 2, name: "Catering & Food" },
+    { id: 3, name: "Photography & Video" },
+    { id: 4, name: "Sound & Music" },
+    { id: 5, name: "Decoration & Styling" },
+    { id: 6, name: "Lighting & Effects" },
+    { id: 7, name: "Logistics & Utilities" },
+    { id: 8, name: "Staffing & Management" },
+    { id: 9, name: "Ritual & Ceremony Services" },
   ];
 
   const validateForm = () => {
