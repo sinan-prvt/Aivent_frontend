@@ -254,8 +254,11 @@ const ProductDetail = () => {
             <ChatModal
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
-                vendorName={product?.name || "Vendor"}
-                vendorImage={product?.image}
+                vendorId={product?.vendor_id || product?.id}
+                vendorName={product?.vendor_name || product?.name || "Vendor"}
+                vendorImage={product?.vendor_image || product?.image}
+                vendorCategory={product?.category || "Service"}
+                vendorRating={product?.rating || 4.9}
             />
         </div>
     );

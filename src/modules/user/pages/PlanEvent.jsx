@@ -246,8 +246,11 @@ const PlanEvent = () => {
             <ChatModal
                 isOpen={!!chatProduct}
                 onClose={() => setChatProduct(null)}
+                vendorId={chatProduct?.vendor_id || chatProduct?.id}
                 vendorName={chatProduct?.name || "Vendor"}
                 vendorImage={chatProduct?.image}
+                vendorCategory={chatProduct?.category || activeTab}
+                vendorRating={chatProduct?.rating || 4.9}
             />
         </div >
     );

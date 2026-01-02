@@ -11,3 +11,10 @@ export const AUTH = {
   CHANGE_PASSWORD: "/auth/change-password/",
 
 };
+
+export const CHAT = {
+  MESSAGES: "messages/",
+  MARK_READ: "mark-read/",
+  UNREAD_COUNT: "unread-count/",
+  INBOX: "inbox/",
+};

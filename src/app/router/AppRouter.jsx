@@ -31,6 +31,7 @@ import VendorVerifyMFA from "../../modules/vendor/pages/VendorVerifyMFA.jsx";
 import VendorProducts from "../../modules/vendor/pages/VendorProducts";
 import VendorCreateProduct from "../../modules/vendor/pages/VendorCreateProduct";
 import VendorEditProduct from "../../modules/vendor/pages/VendorEditProduct";
+import VendorInbox from "../../modules/vendor/pages/VendorInbox";
 import VendorLayout from "../../modules/vendor/layout/VendorLayout.jsx";
 import VendorDashboardHome from "../../modules/vendor/dashboard/VendorDashboardHome.jsx";
 import VendorAuthGuard from "../../modules/vendor/guards/VendorAuthGuard.jsx";
@@ -193,6 +194,9 @@ export default function AppRouter() {
           <Route path="products" element={<VendorProducts />} />
           <Route path="products/create" element={<VendorCreateProduct />} />
           <Route path="products/:id/edit" element={<VendorEditProduct />} />
+
+          {/* Chat/Inbox */}
+          <Route path="inbox" element={<VendorInbox />} />
         </Route>
       </Route>
 

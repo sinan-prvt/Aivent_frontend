@@ -1,19 +1,16 @@
-
 import React, { useState, useEffect, useRef } from "react";
-import { FiX, FiSend, FiPaperclip } from "react-icons/fi";
-import useChat from "../hooks/useChat";
-import useChatHistory from "../hooks/useChatHistory";
+import { FiX, FiSend, FiPaperclip, FiUser } from "react-icons/fi";
+import useVendorChat from "../hooks/useVendorChat";
 import { chatApi } from "../api/chat.api";
 
-const ChatModal = ({ isOpen, onClose, vendorId, vendorName, vendorImage, vendorCategory, vendorRating }) => {
+const VendorChat = ({ isOpen, onClose, userId, userName }) => {
     const [message, setMessage] = useState("");
+    const [history, setHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
-    // Load chat history
-    const { history, isLoading: historyLoading } = useChatHistory(vendorId, isOpen);
-
     // WebSocket connection for real-time messaging
-    const { messages, setMessages, sendMessage, isConnected } = useChat(vendorId, isOpen);
+    const { messages, sendMessage, isConnected } = useVendorChat(userId, isOpen);
 
     // Combine history and new messages
     const allMessages = [...history, ...messages];
@@ -26,29 +23,53 @@ const ChatModal = ({ isOpen, onClose, vendorId, vendorName, vendorImage, vendorC
         if (isOpen) scrollToBottom();
     }, [allMessages, isOpen]);
 
+    // Load chat history
+    useEffect(() => {
+        if (!isOpen || !userId) return;
+
+        const fetchHistory = async () => {
+            setHistoryLoading(true);
+            try {
+                const data = await chatApi.getChatHistory(userId, true);
+
+                // Transform API data to UI format
+                const formattedMessages = data.map((msg) => ({
+                    id: msg.id,
+                    text: msg.message,
+                    sender: msg.sender === "vendor" ? "me" : "customer",
+                    time: new Date(msg.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                }));
+
+                setHistory(formattedMessages);
+            } catch (err) {
+                console.error("Error fetching chat history:", err);
+            } finally {
+                setHistoryLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, [userId, isOpen]);
+
     // Mark messages as read when modal opens
     useEffect(() => {
-        if (isOpen && vendorId) {
-            chatApi.markAsRead(vendorId).catch(err => {
+        if (isOpen && userId) {
+            chatApi.markAsRead(userId, true).catch(err => {
                 console.error("Error marking messages as read:", err);
             });
         }
-    }, [isOpen, vendorId]);
+    }, [isOpen, userId]);
 
     const handleSend = (e) => {
         e.preventDefault();
-        console.log("ChatModal: handleSend triggered", { message: message.trim(), isConnected });
+        if (!message.trim() || !isConnected) return;
 
-        if (!message.trim() || !isConnected) {
-            console.warn("ChatModal: Send blocked", { empty: !message.trim(), disconnected: !isConnected });
-            return;
-        }
-
-        console.log("ChatModal: Calling sendMessage...");
         sendMessage(message);
         setMessage("");
     };
-
 
     if (!isOpen) return null;
 
@@ -67,20 +88,15 @@ const ChatModal = ({ isOpen, onClose, vendorId, vendorName, vendorImage, vendorC
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10">
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold overflow-hidden">
-                                {vendorImage ? <img src={vendorImage} alt="" className="w-full h-full object-cover" /> : vendorName?.[0] || "V"}
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold overflow-hidden">
+                                <FiUser size={20} />
                             </div>
                             <div className={`absolute bottom-0 right-0 w-3 h-3 ${isConnected ? 'bg-green-500' : 'bg-gray-400'} border-2 border-white rounded-full`}></div>
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">{vendorName || "Vendor Name"}</h3>
+                            <h3 className="font-bold text-gray-900">{userName}</h3>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <span>{vendorCategory || "Service"}</span>
-                                {vendorRating && (
-                                    <>
-                                        • <span className="text-yellow-500 font-bold">★ {vendorRating}</span>
-                                    </>
-                                )}
+                                <span>{isConnected ? "Online" : "Offline"}</span>
                             </div>
                         </div>
                     </div>
@@ -145,7 +161,7 @@ const ChatModal = ({ isOpen, onClose, vendorId, vendorName, vendorImage, vendorC
                         />
                         <button
                             type="submit"
-                            disabled={!message.trim()}
+                            disabled={!message.trim() || !isConnected}
                             className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
                         >
                             <FiSend size={18} className={message.trim() ? "ml-0.5" : ""} />
@@ -157,4 +173,4 @@ const ChatModal = ({ isOpen, onClose, vendorId, vendorName, vendorImage, vendorC
     );
 };
 
-export default ChatModal;
+export default VendorChat;

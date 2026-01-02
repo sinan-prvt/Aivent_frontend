@@ -2,14 +2,14 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { FiHome, FiBox, FiSettings, FiLogOut } from "react-icons/fi";
+import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare } from "react-icons/fi";
 
 const SidebarItem = ({ to, icon: Icon, label, active }) => (
   <Link
     to={to}
     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${active
-        ? "bg-indigo-50 text-indigo-600"
-        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+      ? "bg-indigo-50 text-indigo-600"
+      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
       }`}
   >
     <Icon className="w-5 h-5" />
@@ -55,6 +55,12 @@ export default function VendorLayout() {
             icon={FiBox}
             label="Products"
             active={pathname.includes("/products")}
+          />
+          <SidebarItem
+            to="/vendor/dashboard/inbox"
+            icon={FiMessageSquare}
+            label="Messages"
+            active={pathname.includes("/inbox")}
           />
           <SidebarItem
             to="/vendor/dashboard/settings"
