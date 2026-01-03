@@ -44,7 +44,7 @@ export default function VendorVerifyOTP() {
 
   if (!vendor_id || !email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -201,7 +201,7 @@ export default function VendorVerifyOTP() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
           {/* Success State Overlay */}
@@ -217,7 +217,7 @@ export default function VendorVerifyOTP() {
                 <p className="text-gray-600 mb-6">
                   Your vendor account has been successfully verified.
                 </p>
-                <div className="w-12 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full mx-auto"></div>
+                <div className="w-12 h-1 bg-linear-to-r from-green-400 to-blue-500 rounded-full mx-auto"></div>
               </div>
             </div>
           )}
@@ -258,7 +258,7 @@ export default function VendorVerifyOTP() {
           {/* Success Message for Resend */}
           {showResendSuccess && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center animate-fade-in">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
               <div className="ml-3">
                 <p className="text-green-800 text-sm font-medium">
                   New OTP sent successfully! Check your email.
@@ -270,7 +270,7 @@ export default function VendorVerifyOTP() {
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
               <div className="ml-3">
                 <p className="text-red-600 text-sm font-medium">{error}</p>
               </div>

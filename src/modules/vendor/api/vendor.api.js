@@ -1,6 +1,7 @@
 // src/modules/vendor/api/vendor.api.js
 import api from "@/core/api/axios";
 import vendorApi from "@/core/api/vendorAxios";
+import catalogApi from "@/core/api/catalogAxios";
 
 /* =========================
    Vendor Registration Flow
@@ -26,6 +27,12 @@ export const getVendorStatus = () =>
    Vendor Authentication
 ========================= */
 
-/* Vendor login (shared auth service) */
 export const verifyVendorMFA = (payload) =>
   api.post("/api/auth/verify-mfa/", payload);
+
+/* =========================
+   Catalog
+========================= */
+
+export const fetchCategories = () =>
+  catalogApi.get("/categories/");
