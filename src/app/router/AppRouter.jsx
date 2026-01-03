@@ -40,6 +40,8 @@ import PublicLayout from "../../components/layout/PublicLayout.jsx";
 
 /* Vendor */
 
+import { getVendorPath } from "../../modules/vendor/utils/vendorNavigation";
+
 // ------------------------------------------------------
 // Block login/register ONLY if logged in (user/admin)
 // ------------------------------------------------------
@@ -49,7 +51,7 @@ function BlockWhenLoggedIn({ children }) {
 
   if (user?.role === "admin") return <Navigate to="/admin" replace />;
   if (user?.role === "vendor" && user?.mfa_verified !== false) {
-    return <Navigate to="/vendor/dashboard" replace />;
+    return <Navigate to={getVendorPath(user)} replace />;
   }
   if (user?.role === "customer") return <Navigate to="/" replace />;
 
@@ -99,7 +101,7 @@ export default function AppRouter() {
 
       <Route element={<PublicLayout />}>
         <Route path="/" element={user?.role === "vendor"
-          ? <Navigate to="/vendor/dashboard" replace />
+          ? <Navigate to={getVendorPath(user)} replace />
           : <Home />}
         />
         <Route path="/categories/:slug" element={<CategoryProducts />} />
@@ -180,8 +182,11 @@ export default function AppRouter() {
       <Route path="/vendor" element={<VendorAuthGuard />}>
         <Route path="pending" element={<VendorPending />} />
 
+        {/* Redirect generic /vendor/dashboard to specific one */}
+        <Route path="dashboard" element={<Navigate to={getVendorPath(user)} replace />} />
+
         <Route
-          path="dashboard"
+          path=":category/dashboard"
           element={
             <VendorApprovedGuard>
               <VendorLayout />

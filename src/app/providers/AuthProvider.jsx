@@ -21,46 +21,67 @@ export default function AuthProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-  const initAuth = async () => {
-    // 1️⃣ Restore cached user immediately
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+    const initAuth = async () => {
+      // 1️⃣ Restore cached user immediately
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch { }
+      }
+
+      // 2️⃣ Token logic
+      const token = getAccessToken();
+      const skipMeOnce = sessionStorage.getItem("skip_me_once");
+
+      // 3️⃣ Skip /auth/me ONCE (after MFA)
+      if (!token || skipMeOnce) {
+        sessionStorage.removeItem("skip_me_once");
+        setInitialized(true);
+        return;
+      }
+
+      // 4️⃣ Validate token
       try {
-        setUser(JSON.parse(savedUser));
-      } catch {}
-    }
+        const res = await fetchMe();
+        let u = {
+          ...res.data,
+          displayName: makeDisplayName(res.data),
+        };
 
-    // 2️⃣ Token logic
-    const token = getAccessToken();
-    const skipMeOnce = sessionStorage.getItem("skip_me_once");
+        // 5️⃣ If vendor, fetch category & other profile details
+        if (u.role === "vendor") {
+          try {
+            const { fetchVendorMe } = await import("../../modules/vendor/api/vendor.api");
+            const vRes = await fetchVendorMe();
+            // Merge but keep original ID and email as primary safely
+            const vendorData = vRes.data;
+            u = {
+              ...u,
+              category_id: vendorData.category_id,
+              subcategory_ids: vendorData.subcategory_ids,
+              business_name: vendorData.business_name,
+              vendor_id: vendorData.id, // Store vendor-specific ID separately
+              vendor_status: vendorData.status
+            };
+          } catch (err) {
+            console.error("Failed to fetch vendor profile:", err);
+          }
+        }
 
-    // 3️⃣ Skip /auth/me ONCE (after MFA)
-    if (!token || skipMeOnce) {
-      sessionStorage.removeItem("skip_me_once");
-      setInitialized(true);
-      return;
-    }
+        setUser(u);
+        localStorage.setItem("user", JSON.stringify(u));
+      } catch {
+        clearTokens();
+        localStorage.removeItem("user");
+        setUser(null);
+      } finally {
+        setInitialized(true);
+      }
+    };
 
-    // 4️⃣ Validate token
-    try {
-      const res = await fetchMe();
-      const u = {
-        ...res.data,
-        displayName: makeDisplayName(res.data),
-      };
-      setUser(u);
-      localStorage.setItem("user", JSON.stringify(u));
-    } catch {
-      clearTokens();
-      localStorage.removeItem("user");
-      setUser(null);
-    } finally {
-      setInitialized(true);
-    }
-  };
-
-  initAuth();
-}, []);
+    initAuth();
+  }, []);
 
 
 
@@ -74,13 +95,33 @@ export default function AuthProvider({ children }) {
     return () => window.removeEventListener("force-logout", handleForceLogout);
   }, []);
 
-  const login = (access, refresh, userObj) => {
+  const login = async (access, refresh, userObj) => {
     saveAccessToken(access);
     saveRefreshToken(refresh);
 
-    const u = { ...userObj, displayName: makeDisplayName(userObj) };
+    let u = { ...userObj, displayName: makeDisplayName(userObj) };
+
+    if (u.role === "vendor") {
+      try {
+        const { fetchVendorMe } = await import("../../modules/vendor/api/vendor.api");
+        const vRes = await fetchVendorMe();
+        const vendorData = vRes.data;
+        u = {
+          ...u,
+          category_id: vendorData.category_id,
+          subcategory_ids: vendorData.subcategory_ids,
+          business_name: vendorData.business_name,
+          vendor_id: vendorData.id,
+          vendor_status: vendorData.status
+        };
+      } catch (err) {
+        console.error("Failed to fetch vendor profile on login:", err);
+      }
+    }
+
     localStorage.setItem("user", JSON.stringify(u));
     setUser(u);
+    return u;
   };
 
   const logout = () => {

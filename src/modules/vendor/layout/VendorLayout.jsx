@@ -19,13 +19,30 @@ const SidebarItem = ({ to, icon: Icon, label, active }) => (
 
 export default function VendorLayout() {
   const { pathname } = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  // Category mapping for slugs and custom labels
+  const categoryConfig = {
+    "1": { slug: "catering", label: "Overview", products: "Menus" },
+    "2": { slug: "decoration", label: "Overview", products: "Themes" },
+    "3": { slug: "lighting", label: "Overview", products: "Equipment" },
+    "4": { slug: "photography", label: "Overview", products: "Packages" },
+    "5": { slug: "sound", label: "Overview", products: "Equipment" },
+    "6": { slug: "venue", label: "Overview", products: "Halls" },
+    "7": { slug: "staffing", label: "Overview", products: "Staff" },
+    "8": { slug: "ritual", label: "Overview", products: "Services" },
+    "9": { slug: "logistics", label: "Overview", products: "Vehicles" },
+  };
+
+  const catId = user?.category_id ? String(user.category_id) : "unknown";
+  const config = categoryConfig[catId] || { slug: "dashboard", label: "Overview", products: "Products" };
+  const basePath = `/vendor/${config.slug}/dashboard`;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -39,31 +56,33 @@ export default function VendorLayout() {
             <span className="text-xl font-bold text-gray-900 tracking-tight">Aivent</span>
           </Link>
           <div className="mt-2 px-1">
-            <span className="text-xs uppercase font-bold text-gray-400 tracking-wider">Vendor Portal</span>
+            <span className="text-xs uppercase font-bold text-gray-400 tracking-wider">
+              {config.slug.replace('-', ' ')} Portal
+            </span>
           </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
           <SidebarItem
-            to="/vendor/dashboard"
+            to={basePath}
             icon={FiHome}
-            label="Overview"
-            active={pathname === "/vendor/dashboard" || pathname === "/vendor/dashboard/"}
+            label={config.label}
+            active={pathname === basePath || pathname === `${basePath}/`}
           />
           <SidebarItem
-            to="/vendor/dashboard/products"
+            to={`${basePath}/products`}
             icon={FiBox}
-            label="Products"
+            label={config.products}
             active={pathname.includes("/products")}
           />
           <SidebarItem
-            to="/vendor/dashboard/inbox"
+            to={`${basePath}/inbox`}
             icon={FiMessageSquare}
             label="Messages"
             active={pathname.includes("/inbox")}
           />
           <SidebarItem
-            to="/vendor/dashboard/settings"
+            to={`${basePath}/settings`}
             icon={FiSettings}
             label="Settings"
             active={pathname.includes("/settings")}

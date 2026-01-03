@@ -63,7 +63,7 @@ const VendorMFASetup = () => {
 
       // Force fetch user
       const me = await fetchMe();
-      login(res.data.access, res.data.refresh, me.data);
+      await login(res.data.access, res.data.refresh, me.data);
       sessionStorage.removeItem("mfa_payload");
 
       navigate("/vendor/dashboard", { replace: true });

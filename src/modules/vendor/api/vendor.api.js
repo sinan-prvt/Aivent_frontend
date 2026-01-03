@@ -19,6 +19,10 @@ export const confirmVendorOTP = (payload) =>
 export const resendVendorOTP = (payload) =>
   vendorApi.post("/resend-otp/", payload);
 
+/* Get vendor profile (me) */
+export const fetchVendorMe = () =>
+  vendorApi.get("/me/");
+
 /* Get vendor status */
 export const getVendorStatus = () =>
   vendorApi.get("/status/");

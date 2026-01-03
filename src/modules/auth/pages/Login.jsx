@@ -57,7 +57,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.email.trim() || !formData.password.trim()) {
       showErrorToast("Please enter both email and password");
@@ -66,17 +66,17 @@ const Login = () => {
 
     setIsLoading(true);
     let loadingToastId;
-    
+
     try {
       loadingToastId = showLoadingToast("Signing in...");
-      
+
       sessionStorage.removeItem("mfa_payload");
 
       const res = await login(formData);
-      
+
       // Dismiss loading toast
       toast.dismiss(loadingToastId);
-      
+
       const payload = res.data;
 
       console.log("🔵 Login API response:", payload);
@@ -106,7 +106,7 @@ const Login = () => {
       // ✅ Extract user data from response
       let userData = null;
       let tokens = null;
-      
+
       // Handle different response formats
       if (payload.data && payload.data.user) {
         userData = payload.data.user;
@@ -124,14 +124,14 @@ const Login = () => {
       // 🔴 CRITICAL: VENDOR APPROVAL CHECK
       if (userData && userData.role === "vendor") {
         // Check vendor approval status - look for different possible field names
-        const isApproved = 
-          userData.is_approved === true || 
+        const isApproved =
+          userData.is_approved === true ||
           userData.approved === true ||
           userData.approval_status === "approved" ||
           userData.status === "approved" ||
           userData.vendor_status === "approved";
-        
-        const isPending = 
+
+        const isPending =
           userData.approval_status === "pending" ||
           userData.status === "pending" ||
           userData.vendor_status === "pending" ||
@@ -150,25 +150,26 @@ const Login = () => {
           } else {
             showErrorToast("Admin has not approved your vendor account yet. Please contact support.");
           }
-          
+
           // Don't login, just show toast and stay on login page
           setIsLoading(false);
           return;
         }
-        
+
         // If vendor is approved, continue with login
         showSuccessToast("Vendor account approved! Logging in...");
       }
 
       // Proceed with normal login for approved vendors and other roles
       if (userData && tokens?.access) {
-        authLogin(tokens.access, tokens.refresh, userData);
-        
+        const updatedUser = await authLogin(tokens.access, tokens.refresh, userData);
+
         showSuccessToast(`Welcome back, ${userData.name || userData.email || "User"}!`);
 
         // Redirect based on role
         if (userData.role === "vendor") {
-          navigate("/vendor/dashboard", { replace: true });
+          const { getVendorPath } = await import("../../vendor/utils/vendorNavigation");
+          navigate(getVendorPath(updatedUser || userData), { replace: true });
         } else if (userData.role === "admin") {
           navigate("/admin", { replace: true });
         } else {
@@ -181,19 +182,19 @@ const Login = () => {
     } catch (err) {
       // Dismiss loading toast if exists
       if (loadingToastId) toast.dismiss(loadingToastId);
-      
+
       console.error("🔴 Login Error:", err);
       console.error("🔴 Error response:", err.response?.data);
-      
+
       // Handle different error formats
       let errorMessage = "Login failed. Please try again.";
-      
+
       if (err.response?.data) {
         const errorData = err.response.data;
-        
+
         // Handle vendor approval errors
         if (
-          errorData.detail?.includes("not approved") || 
+          errorData.detail?.includes("not approved") ||
           errorData.message?.includes("not approved") ||
           errorData.detail?.includes("pending approval") ||
           errorData.message?.includes("pending approval")
@@ -203,11 +204,11 @@ const Login = () => {
           setIsLoading(false);
           return;
         }
-        
+
         // Handle validation errors
         if (Array.isArray(errorData.detail)) {
           errorMessage = errorData.detail.map(d => d.msg || d).join(", ");
-        } 
+        }
         else if (typeof errorData.detail === 'string') {
           errorMessage = errorData.detail;
         }
@@ -227,13 +228,13 @@ const Login = () => {
             errorMessage = "Access denied. Please contact support.";
           }
         }
-      } 
+      }
       else if (err.message.includes("Network Error")) {
         errorMessage = "Network error. Please check your internet connection.";
       }
-      
+
       showErrorToast(errorMessage);
-      
+
     } finally {
       setIsLoading(false);
     }
@@ -245,7 +246,7 @@ const Login = () => {
       showErrorToast("Please wait for current operation to complete");
       return;
     }
-    
+
     try {
       const clientId = "368057036266-6guernmjcbua4siag0kfgjpht9i7l9bi.apps.googleusercontent.com";
       const redirectUri = "http://localhost:5173/auth/google/callback";
@@ -271,7 +272,7 @@ const Login = () => {
       showErrorToast("Please wait for current operation to complete");
       return;
     }
-    
+
     try {
       const clientId = "1d6f3723-9d92-41b2-81af-44dc76c477af";
       const redirectUri = "http://localhost:5173/auth/microsoft/callback";
@@ -422,8 +423,8 @@ const Login = () => {
 
           <p className="text-center text-sm text-gray-600 mt-6">
             Don't have an account?
-            <Link 
-              to="/register" 
+            <Link
+              to="/register"
               className="text-blue-600 ml-1 hover:underline"
               onClick={(e) => {
                 if (isLoading) {

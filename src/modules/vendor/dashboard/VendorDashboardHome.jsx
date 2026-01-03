@@ -10,6 +10,11 @@ import VenueDashboard from "./VenueDashboard";
 import CateringDashboard from "./CateringDashboard";
 import PhotographyDashboard from "./PhotographyDashboard";
 import DecorDashboard from "./DecorDashboard";
+import SoundDashboard from "./SoundDashboard";
+import LightingDashboard from "./LightingDashboard";
+import StaffingDashboard from "./StaffingDashboard";
+import RitualDashboard from "./RitualDashboard";
+import LogisticsDashboard from "./LogisticsDashboard";
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -42,22 +47,40 @@ export default function VendorDashboardHome() {
   const { user } = useAuth();
   const { data: products, isLoading } = useVendorProducts();
 
-  // Category mapping based on VendorApply.jsx
-  // { id: 1, name: "Venue & Infrastructure" },
-  // { id: 2, name: "Catering & Food" },
-  // { id: 3, name: "Photography & Video" },
-  // { id: 4, name: "Sound & Music" },
-  // { id: 5, name: "Decoration & Styling" },
+  // Category mapping:
+  // 1: Venue & Infrastructure (venue)
+  // 2: Catering & Food (catering)
+  // 3: Photography & Video (photography)
+  // 4: Sound & Music (sound)
+  // 5: Decoration & Styling (decoration)
+  // 6: Lighting & Effects (lighting)
+  // 7: Staffing & Management (staffing)
+  // 8: Ritual & Ceremony Services (ritual)
+  // 9: Logistics & Utilities (logistics)
+
+  const categoryMap = {
+    "1": "catering",
+    "2": "decoration",
+    "3": "lighting",
+    "4": "photography",
+    "5": "sound",
+    "6": "venue",
+    "7": "staffing",
+    "8": "ritual",
+    "9": "logistics",
+  };
 
   const catId = user?.category_id ? String(user.category_id) : "";
 
-  if (catId === "1") return <VenueDashboard />;
-  if (catId === "2") return <CateringDashboard />;
-  if (catId === "3") return <PhotographyDashboard />;
-  if (catId === "5") return <DecorDashboard />;
-
-  // For Sound/Music (4) we can reuse Photography or Decor temporarily, or fallback to generic
-  // Default to Generic for now
+  if (catId === "1") return <CateringDashboard />;
+  if (catId === "2") return <DecorDashboard />;
+  if (catId === "3") return <LightingDashboard />;
+  if (catId === "4") return <PhotographyDashboard />;
+  if (catId === "5") return <SoundDashboard />;
+  if (catId === "6") return <VenueDashboard />;
+  if (catId === "7") return <StaffingDashboard />;
+  if (catId === "8") return <RitualDashboard />;
+  if (catId === "9") return <LogisticsDashboard />;
 
   const totalProducts = products?.length || 0;
   const activeProducts = products?.filter(p => p.is_available).length || 0;
