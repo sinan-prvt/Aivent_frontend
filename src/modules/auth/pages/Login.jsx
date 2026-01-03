@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/auth.api";
 import { useAuth } from "../../../app/providers/AuthProvider";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -10,80 +11,287 @@ const Login = () => {
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
-
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const showErrorToast = (message) => {
+    toast.error(message || "An error occurred", {
+      duration: 4000,
+      position: "top-right",
+    });
+  };
+
+  const showSuccessToast = (message) => {
+    toast.success(message, {
+      duration: 3000,
+      position: "top-right",
+    });
+  };
+
+  const showInfoToast = (message) => {
+    toast(message, {
+      duration: 3000,
+      position: "top-right",
+      icon: "ℹ️",
+    });
+  };
+
+  const showWarningToast = (message) => {
+    toast(message, {
+      duration: 4000,
+      position: "top-right",
+      icon: "⚠️",
+      style: {
+        background: '#fef3c7',
+        color: '#92400e',
+      }
+    });
+  };
+
+  const showLoadingToast = (message) => {
+    return toast.loading(message, {
+      position: "top-right",
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("🔵 Login form submitted");
+    
+    // Validate form
+    if (!formData.email.trim() || !formData.password.trim()) {
+      showErrorToast("Please enter both email and password");
+      return;
+    }
+
     setIsLoading(true);
-
-    sessionStorage.removeItem("mfa_payload");
-
+    let loadingToastId;
+    
     try {
-      console.log("🔵 Calling login API with:", formData.email);
+      loadingToastId = showLoadingToast("Signing in...");
+      
+      sessionStorage.removeItem("mfa_payload");
+
       const res = await login(formData);
-      console.log("🔵 Login API response received");
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToastId);
+      
       const payload = res.data;
 
-      console.log("🔵 Login response:", res);
-      console.log("🔵 Login payload:", payload);
-      console.log("🔵 MFA required:", payload.mfa_required);
-      console.log("🔵 MFA setup:", payload.mfa_setup);
+      console.log("🔵 Login API response:", payload);
 
-      // 🔐 MFA FLOW - Backend returns mfa_token, mfa_setup, qr_code directly on payload
+      // 🔐 MFA FLOW
       if (payload.mfa_required === true) {
         const mfaPayload = {
           mfa_token: payload.mfa_token,
           mfa_setup: payload.mfa_setup === true,
           qr_code: payload.qr_code || null,
         };
-        console.log("🔵 MFA Token:", mfaPayload.mfa_token);
-        console.log("🔵 QR Code Present:", !!mfaPayload.qr_code);
 
-        // 🔥 CRITICAL FIX
         localStorage.removeItem("user");
-
         sessionStorage.setItem("mfa_payload", JSON.stringify(mfaPayload));
 
-        navigate(
-          payload.mfa_setup ? "/vendor/mfa-setup" : "/vendor/mfa",
-          { replace: true }
-        );
+        if (payload.mfa_setup) {
+          showInfoToast("Please set up Multi-Factor Authentication");
+          navigate("/vendor/mfa-setup", { replace: true });
+        } else {
+          showInfoToast("MFA verification required");
+          navigate("/vendor/mfa", { replace: true });
+        }
 
         return;
       }
 
-
-      // ⏳ Vendor pending
-      if (payload.detail === "Vendor approval pending") {
-        navigate("/vendor/pending", { replace: true });
-        return;
+      // ✅ Extract user data from response
+      let userData = null;
+      let tokens = null;
+      
+      // Handle different response formats
+      if (payload.data && payload.data.user) {
+        userData = payload.data.user;
+        tokens = { access: payload.data.access, refresh: payload.data.refresh };
+      } else if (payload.user) {
+        userData = payload.user;
+        tokens = { access: payload.access, refresh: payload.refresh };
+      } else if (payload) {
+        userData = payload;
+        tokens = payload;
       }
 
-      // ✅ Normal login
-      const tokens = payload.data ?? payload;
-      const { access, refresh, user } = tokens;
+      console.log("🔵 Extracted user data:", userData);
 
-      authLogin(access, refresh, user);
+      // 🔴 CRITICAL: VENDOR APPROVAL CHECK
+      if (userData && userData.role === "vendor") {
+        // Check vendor approval status - look for different possible field names
+        const isApproved = 
+          userData.is_approved === true || 
+          userData.approved === true ||
+          userData.approval_status === "approved" ||
+          userData.status === "approved" ||
+          userData.vendor_status === "approved";
+        
+        const isPending = 
+          userData.approval_status === "pending" ||
+          userData.status === "pending" ||
+          userData.vendor_status === "pending" ||
+          userData.is_approved === false ||
+          userData.approved === false;
 
-      if (user.role === "vendor") navigate("/vendor/dashboard", { replace: true });
-      else if (user.role === "admin") navigate("/admin", { replace: true });
-      else navigate("/", { replace: true });
+        console.log("🔵 Vendor approval check:");
+        console.log("   - isApproved:", isApproved);
+        console.log("   - isPending:", isPending);
+        console.log("   - User object:", userData);
+
+        // If vendor is NOT approved
+        if (!isApproved) {
+          if (isPending) {
+            showWarningToast("Your vendor account is pending admin approval. Please wait for approval before logging in.");
+          } else {
+            showErrorToast("Admin has not approved your vendor account yet. Please contact support.");
+          }
+          
+          // Don't login, just show toast and stay on login page
+          setIsLoading(false);
+          return;
+        }
+        
+        // If vendor is approved, continue with login
+        showSuccessToast("Vendor account approved! Logging in...");
+      }
+
+      // Proceed with normal login for approved vendors and other roles
+      if (userData && tokens?.access) {
+        authLogin(tokens.access, tokens.refresh, userData);
+        
+        showSuccessToast(`Welcome back, ${userData.name || userData.email || "User"}!`);
+
+        // Redirect based on role
+        if (userData.role === "vendor") {
+          navigate("/vendor/dashboard", { replace: true });
+        } else if (userData.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      } else {
+        throw new Error("Invalid response format from server");
+      }
 
     } catch (err) {
+      // Dismiss loading toast if exists
+      if (loadingToastId) toast.dismiss(loadingToastId);
+      
       console.error("🔴 Login Error:", err);
-      console.error("🔴 Login Error Response:", err.response);
-      console.error("🔴 Login Error Data:", err.response?.data);
-      alert(err.response?.data?.detail || err.message || "Login failed");
+      console.error("🔴 Error response:", err.response?.data);
+      
+      // Handle different error formats
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Handle vendor approval errors
+        if (
+          errorData.detail?.includes("not approved") || 
+          errorData.message?.includes("not approved") ||
+          errorData.detail?.includes("pending approval") ||
+          errorData.message?.includes("pending approval")
+        ) {
+          errorMessage = "Admin has not approved your vendor account yet. Please wait for approval.";
+          showWarningToast(errorMessage);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Handle validation errors
+        if (Array.isArray(errorData.detail)) {
+          errorMessage = errorData.detail.map(d => d.msg || d).join(", ");
+        } 
+        else if (typeof errorData.detail === 'string') {
+          errorMessage = errorData.detail;
+        }
+        else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        else if (err.response.status === 401) {
+          errorMessage = "Invalid email or password. Please try again.";
+        }
+        else if (err.response.status === 403) {
+          if (errorData.code === 'vendor_not_approved') {
+            errorMessage = "Admin has not approved your vendor account yet.";
+            showWarningToast(errorMessage);
+            setIsLoading(false);
+            return;
+          } else {
+            errorMessage = "Access denied. Please contact support.";
+          }
+        }
+      } 
+      else if (err.message.includes("Network Error")) {
+        errorMessage = "Network error. Please check your internet connection.";
+      }
+      
+      showErrorToast(errorMessage);
+      
     } finally {
       setIsLoading(false);
     }
   };
 
+  // OAuth button handlers
+  const handleGoogleLogin = () => {
+    if (isLoading) {
+      showErrorToast("Please wait for current operation to complete");
+      return;
+    }
+    
+    try {
+      const clientId = "368057036266-6guernmjcbua4siag0kfgjpht9i7l9bi.apps.googleusercontent.com";
+      const redirectUri = "http://localhost:5173/auth/google/callback";
 
+      const url =
+        "https://accounts.google.com/o/oauth2/v2/auth" +
+        `?client_id=${clientId}` +
+        `&redirect_uri=${redirectUri}` +
+        `&response_type=code` +
+        `&access_type=offline` +
+        `&prompt=select_account` +
+        `&scope=openid%20email%20profile`;
+
+      showInfoToast("Redirecting to Google...");
+      window.location.href = url;
+    } catch (error) {
+      showErrorToast("Failed to initiate Google login");
+    }
+  };
+
+  const handleMicrosoftLogin = () => {
+    if (isLoading) {
+      showErrorToast("Please wait for current operation to complete");
+      return;
+    }
+    
+    try {
+      const clientId = "1d6f3723-9d92-41b2-81af-44dc76c477af";
+      const redirectUri = "http://localhost:5173/auth/microsoft/callback";
+      const scope = encodeURIComponent("openid profile email");
+
+      const url =
+        `https://login.microsoftonline.com/common/oauth2/v2.0/authorize` +
+        `?client_id=${clientId}` +
+        `&response_type=code` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_mode=query` +
+        `&scope=${scope}` +
+        `&state=ms_auth`;
+
+      showInfoToast("Redirecting to Microsoft...");
+      window.location.href = url;
+    } catch (error) {
+      showErrorToast("Failed to initiate Microsoft login");
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center px-4">
@@ -94,7 +302,7 @@ const Login = () => {
 
           <div className="space-y-5">
             <input
-              type="text"
+              type="email"
               name="email"
               placeholder="Enter your Email"
               value={formData.email}
@@ -102,6 +310,11 @@ const Login = () => {
               disabled={isLoading}
               className="w-full px-4 py-3 text-sm border rounded-xl border-gray-300
                          focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isLoading) {
+                  handleSubmit(e);
+                }
+              }}
             />
 
             <input
@@ -113,28 +326,37 @@ const Login = () => {
               disabled={isLoading}
               className="w-full px-4 py-3 text-sm border rounded-xl border-gray-300
                          focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isLoading) {
+                  handleSubmit(e);
+                }
+              }}
             />
 
             <div className="text-right">
               <Link
                 to="/forgot-password"
                 className="text-blue-600 text-sm hover:underline"
+                onClick={(e) => {
+                  if (isLoading) {
+                    e.preventDefault();
+                    showErrorToast("Please wait for login to complete");
+                  }
+                }}
               >
                 Forgot Password?
               </Link>
             </div>
 
-            {/* Updated Button with Professional Loading Animation */}
             <button
               onClick={handleSubmit}
               disabled={isLoading}
               className="w-full bg-blue-600 text-white py-3 rounded-xl 
                          font-semibold hover:bg-blue-700 transition disabled:bg-blue-500
-                         disabled:cursor-not-allowed relative min-h-[48px]"
+                         disabled:cursor-not-allowed relative min-h-12"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-3">
-                  {/* Professional Spinner */}
                   <div className="relative">
                     <div className="w-5 h-5 border-2 border-white border-opacity-30 rounded-full"></div>
                     <div className="absolute top-0 left-0 w-5 h-5 border-2 border-transparent border-t-white border-r-white rounded-full animate-spin"></div>
@@ -152,23 +374,10 @@ const Login = () => {
 
             <div className="flex justify-center gap-4">
               <button
-                className="w-10 h-10 flex items-center justify-center rounded-full border hover:bg-gray-100 disabled:opacity-50"
-                onClick={() => {
-                  const clientId = "368057036266-6guernmjcbua4siag0kfgjpht9i7l9bi.apps.googleusercontent.com";
-                  const redirectUri = "http://localhost:5173/auth/google/callback";
-
-                  const url =
-                    "https://accounts.google.com/o/oauth2/v2/auth" +
-                    `?client_id=${clientId}` +
-                    `&redirect_uri=${redirectUri}` +
-                    `&response_type=code` +
-                    `&access_type=offline` +
-                    `&prompt=select_account` +
-                    `&scope=openid%20email%20profile`;
-
-                  window.location.href = url;
-                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full border hover:bg-gray-100 disabled:opacity-50 transition"
+                onClick={handleGoogleLogin}
                 disabled={isLoading}
+                title="Sign in with Google"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -196,24 +405,10 @@ const Login = () => {
               </button>
 
               <button
-                className="w-10 h-10 flex items-center justify-center rounded-full border hover:bg-gray-100 disabled:opacity-50"
-                onClick={() => {
-                  const clientId = "1d6f3723-9d92-41b2-81af-44dc76c477af";
-                  const redirectUri = "http://localhost:5173/auth/microsoft/callback";
-                  const scope = encodeURIComponent("openid profile email");
-
-                  const url =
-                    `https://login.microsoftonline.com/common/oauth2/v2.0/authorize` +
-                    `?client_id=${clientId}` +
-                    `&response_type=code` +
-                    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-                    `&response_mode=query` +
-                    `&scope=${scope}` +
-                    `&state=ms_auth`;
-
-                  window.location.href = url;
-                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full border hover:bg-gray-100 disabled:opacity-50 transition"
+                onClick={handleMicrosoftLogin}
                 disabled={isLoading}
+                title="Sign in with Microsoft"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23">
                   <rect width="10" height="10" x="1" y="1" fill="#F25022" />
@@ -227,7 +422,16 @@ const Login = () => {
 
           <p className="text-center text-sm text-gray-600 mt-6">
             Don't have an account?
-            <Link to="/register" className="text-blue-600 ml-1 hover:underline">
+            <Link 
+              to="/register" 
+              className="text-blue-600 ml-1 hover:underline"
+              onClick={(e) => {
+                if (isLoading) {
+                  e.preventDefault();
+                  showErrorToast("Please wait for login to complete");
+                }
+              }}
+            >
               Create one here
             </Link>
           </p>
