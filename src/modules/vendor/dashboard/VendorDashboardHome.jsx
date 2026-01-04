@@ -168,7 +168,7 @@ export default function VendorDashboardHome() {
               </div>
             ) : products?.slice(0, 4).map((product) => (
               <div key={product.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                <div className="h-12 w-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                <div className="h-12 w-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                   {product.image ? (
                     <img src={product.image} alt="" className="h-full w-full object-cover" />
                   ) : (

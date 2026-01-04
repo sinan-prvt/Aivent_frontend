@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare } from "react-icons/fi";
+import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar } from "react-icons/fi";
 
 const SidebarItem = ({ to, icon: Icon, label, active }) => (
   <Link
@@ -63,18 +63,53 @@ export default function VendorLayout() {
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
-          <SidebarItem
-            to={basePath}
-            icon={FiHome}
-            label={config.label}
-            active={pathname === basePath || pathname === `${basePath}/`}
-          />
-          <SidebarItem
-            to={`${basePath}/products`}
-            icon={FiBox}
-            label={config.products}
-            active={pathname.includes("/products")}
-          />
+          {catId === "1" ? (
+            <>
+              {/* CATERING SPECIFIC NAVIGATION */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label="Dashboard"
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/menus`}
+                icon={FiList}
+                label="Menu Builder"
+                active={pathname.includes("/menus")}
+              />
+              <SidebarItem
+                to={`${basePath}/packages`}
+                icon={FiBox}
+                label="Packages"
+                active={pathname.includes("/packages")}
+              />
+              <SidebarItem
+                to={`${basePath}/bookings`}
+                icon={FiCalendar}
+                label="Bookings"
+                active={pathname.includes("/bookings")}
+              />
+            </>
+          ) : (
+            <>
+              {/* STANDARD NAVIGATION FOR OTHER VENDORS */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label={config.label}
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/products`}
+                icon={FiBox}
+                label={config.products}
+                active={pathname.includes("/products")}
+              />
+            </>
+          )}
+
+          {/* COMMON NAVIGATION */}
           <SidebarItem
             to={`${basePath}/inbox`}
             icon={FiMessageSquare}

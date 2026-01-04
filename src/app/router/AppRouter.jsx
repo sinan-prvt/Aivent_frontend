@@ -91,6 +91,15 @@ function MFARoute({ children }) {
 // ------------------------------------------------------
 // FINAL ROUTES
 // ------------------------------------------------------
+import MenuBuilder from "../../modules/vendor/pages/catering/MenuBuilder.jsx";
+import CateringPackages from "../../modules/vendor/pages/catering/CateringPackages.jsx";
+import CateringBookings from "../../modules/vendor/pages/catering/CateringBookings.jsx";
+
+// ... [existing imports]
+
+// ------------------------------------------------------
+// FINAL ROUTES
+// ------------------------------------------------------
 export default function AppRouter() {
 
   const { user, initialized } = useAuth();
@@ -194,6 +203,11 @@ export default function AppRouter() {
           }
         >
           <Route index element={<VendorDashboardHome />} />
+
+          {/* Catering Specific Routes */}
+          <Route path="menus" element={<MenuBuilder />} />
+          <Route path="packages" element={<CateringPackages />} />
+          <Route path="bookings" element={<CateringBookings />} />
 
           {/* Product Management */}
           <Route path="products" element={<VendorProducts />} />

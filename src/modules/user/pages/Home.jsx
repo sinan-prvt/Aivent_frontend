@@ -1,334 +1,455 @@
-  import React, { useState } from "react";
-  import { Link, useNavigate } from "react-router-dom";
-  import Navbar from "../../../components/layout/Navbar";
-  import { useAuth } from "../../../app/providers/AuthProvider";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../../../components/layout/Navbar";
+import { useAuth } from "../../../app/providers/AuthProvider";
 
-  export default function Home() {
-    const { user } = useAuth();
-    const navigate = useNavigate();
-    const [showCategoriesModal, setShowCategoriesModal] = useState(false);
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [eventData, setEventData] = useState({
-      eventType: "Wedding",
-      budget: "",
-      guests: ""
-    });
+export default function Home() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [eventData, setEventData] = useState({
+    eventType: "Wedding",
+    budget: "",
+    guests: ""
+  });
+  const [isScrolled, setIsScrolled] = useState(false);
 
-    console.log("Modal state:", showCategoriesModal); // Debug log
-
-    const goToDashboard = () => {
-      if (!user) return navigate("/login");
-      if (user.role === "admin") return navigate("/admin", { replace: true });
-      if (user.role === "vendor") return navigate("/vendor/dashboard", { replace: true });
-      return navigate("/", { replace: true });
+  // Handle scroll effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
     };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    const handleStartPlanning = (e) => {
-      e.preventDefault();
-      console.log("Start Planning clicked");
-      console.log("Event Data:", eventData);
-      setShowCategoriesModal(true);
-    };
+  const goToDashboard = () => {
+    if (!user) return navigate("/login");
+    if (user.role === "admin") return navigate("/admin", { replace: true });
+    if (user.role === "vendor") return navigate("/vendor/dashboard", { replace: true });
+    return navigate("/", { replace: true });
+  };
 
-    const handleCategoryChange = (category) => {
-      if (selectedCategories.includes(category)) {
-        setSelectedCategories(selectedCategories.filter(c => c !== category));
-      } else {
-        setSelectedCategories([...selectedCategories, category]);
-      }
-    };
+  const handleStartPlanning = (e) => {
+    e.preventDefault();
+    setShowCategoriesModal(true);
+  };
 
-    const handleGeneratePlan = () => {
-      console.log("Generating plan with:", {
-        eventData,
-        selectedCategories
+  const handleCategoryChange = (category) => {
+    if (selectedCategories.includes(category)) {
+      setSelectedCategories(selectedCategories.filter(c => c !== category));
+    } else {
+      setSelectedCategories([...selectedCategories, category]);
+    }
+  };
+
+  const handleGeneratePlan = () => {
+    setShowCategoriesModal(false);
+    setSelectedCategories([]);
+    
+    if (user) {
+      navigate("/dashboard/plan", { 
+        state: { 
+          eventData, 
+          categories: selectedCategories 
+        } 
       });
-      
-      // Close modal
-      setShowCategoriesModal(false);
-      setSelectedCategories([]);
-      
-      // Navigate based on authentication
-      if (user) {
-        navigate("/dashboard/plan", { 
-          state: { 
-            eventData, 
-            categories: selectedCategories 
-          } 
-        });
-      } else {
-        navigate("/register", { 
-          state: { 
-            eventData, 
-            categories: selectedCategories 
-          } 
-        });
-      }
-    };
+    } else {
+      navigate("/register", { 
+        state: { 
+          eventData, 
+          categories: selectedCategories 
+        } 
+      });
+    }
+  };
 
-    const eventCategories = [
-      "Venue",
-      "Catering",
-      "Food",
-      "Stage",
-      "Lighting",
-      "Entertainment",
-      "Invitations",
-      "Decor"
-    ];
+  const eventCategories = [
+    { name: "Venue", icon: "🏛️" },
+    { name: "Catering", icon: "🍽️" },
+    { name: "Food", icon: "🍕" },
+    { name: "Stage", icon: "🎭" },
+    { name: "Lighting", icon: "💡" },
+    { name: "Entertainment", icon: "🎤" },
+    { name: "Invitations", icon: "✉️" },
+    { name: "Decor", icon: "🎨" },
+    { name: "Photography", icon: "📸" },
+    { name: "Transportation", icon: "🚗" },
+    { name: "Accommodation", icon: "🏨" },
+    { name: "Security", icon: "🛡️" }
+  ];
 
-    return (
-      <div className="min-h-screen bg-white text-gray-900 relative">
-        <Navbar />
+  const eventTypes = [
+    { name: "Wedding", color: "from-pink-500 to-rose-500" },
+    { name: "Birthday", color: "from-blue-500 to-cyan-500" },
+    { name: "Corporate", color: "from-indigo-500 to-purple-500" },
+    { name: "Festival", color: "from-green-500 to-emerald-500" },
+    { name: "Conference", color: "from-gray-700 to-gray-900" },
+    { name: "Social", color: "from-orange-500 to-amber-500" }
+  ];
 
-        {/* Categories Modal - Now properly positioned */}
-        {showCategoriesModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black bg-opacity-50">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fadeIn">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">
-                  What do you need to plan?
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 text-gray-900 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute top-1/3 -left-20 w-60 h-60 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute bottom-40 right-1/4 w-40 h-40 bg-gradient-to-r from-pink-100 to-rose-100 rounded-full blur-3xl opacity-50"></div>
+      </div>
+
+      <Navbar />
+
+      {/* Categories Modal */}
+      {showCategoriesModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 animate-scaleIn">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-3xl font-bold text-gray-900">
+                  Select Planning Categories
                 </h3>
+                <p className="text-gray-600 mt-2">
+                  Choose the services you need for your event
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCategoriesModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl p-2 hover:bg-gray-100 rounded-lg transition"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
+              {eventCategories.map((category) => (
                 <button
-                  onClick={() => setShowCategoriesModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-3xl leading-none"
-                  aria-label="Close"
+                  key={category.name}
+                  onClick={() => handleCategoryChange(category.name)}
+                  className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 ${
+                    selectedCategories.includes(category.name)
+                      ? "border-indigo-500 bg-indigo-50 transform scale-105"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
                 >
-                  &times;
+                  <span className="text-2xl mb-2">{category.icon}</span>
+                  <span className="font-medium text-gray-800 text-sm">{category.name}</span>
                 </button>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center pt-6 border-t">
+              <div>
+                <span className="text-sm text-gray-600">
+                  {selectedCategories.length} category selected
+                </span>
               </div>
-              
-              <p className="text-gray-600 mb-6 text-lg">
-                Select the categories you need help with.
-              </p>
-              
-              <div className="space-y-4 mb-8">
-                {eventCategories.map((category) => (
-                  <div key={category} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`category-${category.toLowerCase()}`}
-                      checked={selectedCategories.includes(category)}
-                      onChange={() => handleCategoryChange(category)}
-                      className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                    />
-                    <label
-                      htmlFor={`category-${category.toLowerCase()}`}
-                      className="ml-3 text-gray-700 text-lg font-medium cursor-pointer"
-                    >
-                      {category}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              
               <div className="flex gap-3">
                 <button
-                  type="button"
                   onClick={() => {
                     setShowCategoriesModal(false);
                     setSelectedCategories([]);
                   }}
-                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition"
+                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition"
                 >
                   Cancel
                 </button>
                 <button
-                  type="button"
                   onClick={handleGeneratePlan}
                   disabled={selectedCategories.length === 0}
-                  className={`flex-1 py-3 rounded-xl font-semibold transition ${
+                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
                     selectedCategories.length === 0
-                      ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                      ? "bg-gray-200 cursor-not-allowed text-gray-400"
+                      : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   }`}
                 >
-                  Generate Plan
+                  Continue to Planning →
                 </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <section className="text-center py-20 px-6">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4">
-            Your Event, Perfectly Planned
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-10">
-            Aivent is the all-in-one platform to efficiently bring your vision to
-            life, from budget to final guest.
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-24 px-6 max-w-7xl mx-auto">
+        <div className="text-center max-w-4xl mx-auto mb-16">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+            Event Planning,
+            <span className="block">Perfected.</span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Streamline your entire event workflow with AI-powered tools, vendor management, 
+            and real-time collaboration—all in one professional platform.
           </p>
+        </div>
 
-          <div className="max-w-3xl mx-auto">
+        {/* Event Planning Card */}
+        <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-gray-200">
+          <div className="flex flex-col lg:flex-row lg:items-end gap-8">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Begin Your Event Journey
+              </h3>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                    Event Type
+                  </label>
+                  <select 
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+                    value={eventData.eventType}
+                    onChange={(e) => setEventData({...eventData, eventType: e.target.value})}
+                  >
+                    {eventTypes.map(type => (
+                      <option key={type.name} value={type.name}>{type.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                    Estimated Budget
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₹</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+                      placeholder="e.g., 50,000"
+                      value={eventData.budget}
+                      onChange={(e) => setEventData({...eventData, budget: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                    Expected Guests
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">👥</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+                      placeholder="e.g., 100"
+                      value={eventData.guests}
+                      onChange={(e) => setEventData({...eventData, guests: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:w-auto">
+              <button 
+                onClick={handleStartPlanning}
+                className="w-full lg:w-auto px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0"
+              >
+                Start Planning
+              </button>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
             {user ? (
               <button
                 onClick={goToDashboard}
-                className="mt-4 px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-lg font-semibold shadow-md hover:shadow-lg transition"
+                className="px-8 py-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl hover:from-gray-800 hover:to-gray-900 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
               >
                 Go to Dashboard
               </button>
             ) : (
-              <div className="flex items-center justify-center gap-4">
+              <>
                 <Link
                   to="/register"
-                  className="mt-4 px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-lg font-semibold shadow-md hover:shadow-lg transition"
+                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                 >
-                  Get Started
+                  Get Started Free
                 </Link>
                 <Link
                   to="/login"
-                  className="mt-4 px-6 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-medium transition"
+                  className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition"
                 >
-                  Login
+                  Existing User? Login
                 </Link>
-              </div>
+              </>
             )}
           </div>
+        </div>
+      </section>
 
-          {/* Event Planning Form */}
-          <div className="mt-10 max-w-3xl mx-auto bg-white p-8 shadow-xl rounded-2xl border">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex flex-col">
-                <label className="text-gray-700 font-semibold mb-2">Event Type</label>
-                <select 
-                  className="border-2 border-gray-300 rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-                  value={eventData.eventType}
-                  onChange={(e) => setEventData({...eventData, eventType: e.target.value})}
-                >
-                  <option>Wedding</option>
-                  <option>Birthday</option>
-                  <option>Corporate Event</option>
-                  <option>Festival</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col">
-                <label className="text-gray-700 font-semibold mb-2">Estimated Budget</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-500">₹</span>
-                  <input
-                    type="number"
-                    className="border-2 border-gray-300 rounded-xl pl-10 pr-4 py-3 w-full focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-                    placeholder="50,000"
-                    value={eventData.budget}
-                    onChange={(e) => setEventData({...eventData, budget: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col">
-                <label className="text-gray-700 font-semibold mb-2">Number of Guests</label>
-                <input
-                  type="number"
-                  className="border-2 border-gray-300 rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-                  placeholder="100"
-                  value={eventData.guests}
-                  onChange={(e) => setEventData({...eventData, guests: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <button 
-              type="button"
-              onClick={handleStartPlanning}
-              className="w-full mt-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-lg font-semibold shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5"
-            >
-              Start Planning
-            </button>
+      {/* Features Section */}
+      <section className="py-24 px-6 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Enterprise-Grade Tools,
+              <span className="block text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+                Simplified for You
+              </span>
+            </h2>
+            <p className="text-xl text-gray-600">
+              Comprehensive suite of professional tools designed to handle every aspect of event planning
+            </p>
           </div>
-        </section>
 
-        <section className="bg-gray-50 py-20 px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
-            All-in-One Planning, Simplified
-          </h2>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-12">
-            From finalizing the perfect vendors to collaborating with your team,
-            our powerful tools make event planning seamless and enjoyable.
-          </p>
-
-          <div className="max-w-7xl mx-auto grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                title: "Budget-First Planning",
-                desc: "Plan smarter with budgeting tools and real-time cost insights.",
+                icon: "💰",
+                title: "Intelligent Budgeting",
+                desc: "AI-powered budget allocation and real-time cost tracking with predictive analytics.",
+                gradient: "from-blue-500 to-cyan-500"
               },
               {
-                title: "Vendor Matching",
-                desc: "Find the right vendors based on your style, budget, and needs.",
+                icon: "🤝",
+                title: "Vendor Ecosystem",
+                desc: "Curated network of verified professionals with transparent ratings and reviews.",
+                gradient: "from-green-500 to-emerald-500"
               },
               {
-                title: "Live Chat Bargaining",
-                desc: "Message and negotiate with vendors instantly inside the platform.",
+                icon: "💬",
+                title: "Smart Negotiation",
+                desc: "In-platform communication with built-in contract management and approval workflows.",
+                gradient: "from-purple-500 to-pink-500"
               },
               {
-                title: "AI Event Assistant",
-                desc: "Get suggestions, timelines, and reminders powered by AI.",
+                icon: "🤖",
+                title: "AI Planning Assistant",
+                desc: "Automated timelines, vendor matching, and personalized recommendations.",
+                gradient: "from-orange-500 to-amber-500"
               },
               {
-                title: "Collaborative Planning Rooms",
-                desc: "Invite team members to collaborate, vote, and manage tasks.",
+                icon: "👥",
+                title: "Team Collaboration",
+                desc: "Role-based access control, shared dashboards, and real-time progress tracking.",
+                gradient: "from-indigo-500 to-blue-500"
               },
               {
-                title: "Task Management",
-                desc: "Track progress with checklists, deadlines, and smart reminders.",
-              },
+                icon: "📊",
+                title: "Analytics Dashboard",
+                desc: "Comprehensive insights with ROI tracking and performance metrics.",
+                gradient: "from-gray-700 to-gray-900"
+              }
             ].map((item, i) => (
               <div
                 key={i}
-                className="p-6 bg-white shadow-lg rounded-xl border hover:shadow-xl transition transform hover:-translate-y-1"
+                className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 hover:-translate-y-2"
               >
-                <h3 className="font-semibold text-xl mb-3">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
+                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-r ${item.gradient} text-white text-2xl mb-6`}>
+                  {item.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className="py-10 px-6 border-t bg-white">
-          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 text-center md:text-left">
+      {/* Stats Section */}
+      <section className="py-16 px-6 bg-gradient-to-r from-gray-900 to-indigo-900 text-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: "10,000+", label: "Events Planned" },
+              { value: "₹500M+", label: "Budget Managed" },
+              { value: "5,000+", label: "Verified Vendors" },
+              { value: "98.7%", label: "Client Satisfaction" }
+            ].map((stat, i) => (
+              <div key={i} className="p-6">
+                <div className="text-5xl font-bold mb-2">{stat.value}</div>
+                <div className="text-gray-300 font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-12">
             <div>
-              <h4 className="font-semibold text-lg mb-3">Product</h4>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Features</p>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Pricing</p>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Templates</p>
+              <h3 className="text-2xl font-bold mb-4">Aivent</h3>
+              <p className="text-gray-400">
+                Professional event planning platform powered by AI and industry expertise.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-lg mb-6 text-gray-300">Product</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Features</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Pricing</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Case Studies</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">API</a></li>
+              </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-lg mb-3">Company</h4>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">About</p>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Careers</p>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Contact</p>
+              <h4 className="font-semibold text-lg mb-6 text-gray-300">Company</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition">About Us</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Careers</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Press</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+              </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold text-lg mb-3">Legal</h4>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Privacy Policy</p>
-              <p className="text-gray-600 hover:text-gray-900 cursor-pointer">Terms of Service</p>
+              <h4 className="font-semibold text-lg mb-6 text-gray-300">Resources</h4>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Blog</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Help Center</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Community</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition">Partners</a></li>
+              </ul>
             </div>
           </div>
 
-          <p className="text-center text-gray-500 mt-8">
-            © 2025 Aivent. All rights reserved.
-          </p>
-        </footer>
+          <div className="pt-12 mt-12 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm">
+              © 2025 Aivent. All rights reserved.
+            </p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <a href="#" className="text-gray-400 hover:text-white transition">Privacy Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white transition">Terms of Service</a>
+              <a href="#" className="text-gray-400 hover:text-white transition">Cookie Policy</a>
+            </div>
+          </div>
+        </div>
+      </footer>
 
-        {/* Add custom CSS for animation */}
-        <style>{`
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .animate-fadeIn {
-      animation: fadeIn 0.3s ease-out;
-    }
-  `}</style>
-      </div>
-    );
-  }
+      {/* Custom Animations */}
+      <style>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+          scroll-behavior: smooth;
+        }
+      `}</style>
+    </div>
+  );
+}

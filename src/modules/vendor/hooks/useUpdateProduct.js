@@ -9,8 +9,6 @@ export const useUpdateProduct = () => {
         mutationFn: ({ id, data }) => updateProduct(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["vendor-products"] });
-            // Also invalidate detail view if it exists
-            queryClient.invalidateQueries({ queryKey: ["vendor-product-detail"] });
         },
     });
 };
