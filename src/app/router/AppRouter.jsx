@@ -95,6 +95,11 @@ function MFARoute({ children }) {
 import MenuBuilder from "../../modules/vendor/pages/catering/MenuBuilder.jsx";
 import CateringPackages from "../../modules/vendor/pages/catering/CateringPackages.jsx";
 import CateringBookings from "../../modules/vendor/pages/catering/CateringBookings.jsx";
+import DecorInventory from "../../modules/vendor/pages/decoration/DecorInventory.jsx";
+import DecorEvents from "../../modules/vendor/pages/decoration/DecorEvents.jsx";
+import DecorReports from "../../modules/vendor/pages/decoration/DecorReports.jsx";
+import DecorBookings from "../../modules/vendor/pages/decoration/DecorBookings.jsx";
+import ThemeManager from "../../modules/vendor/pages/decoration/ThemeManager.jsx";
 
 // ... [existing imports]
 
@@ -209,6 +214,13 @@ export default function AppRouter() {
           <Route path="menus" element={<MenuBuilder />} />
           <Route path="packages" element={<CateringPackages />} />
           <Route path="bookings" element={<CateringBookings />} />
+
+          {/* Decoration Specific Routes */}
+          <Route path="inventory" element={<DecorInventory />} />
+          <Route path="events" element={<DecorEvents />} />
+          <Route path="reports" element={<DecorReports />} />
+          <Route path="decor-bookings" element={<DecorBookings />} />
+          <Route path="themes" element={<ThemeManager />} />
 
           {/* Product Management */}
           <Route path="products" element={<VendorProducts />} />

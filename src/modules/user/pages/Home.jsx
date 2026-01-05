@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Navbar from "../../../components/layout/Navbar";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useCategories } from "../hooks/useCategories";
@@ -15,6 +16,7 @@ export default function Home() {
     budget: "",
     guests: ""
   });
+  const [errors, setErrors] = useState({});
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle scroll effect for navbar
@@ -35,6 +37,23 @@ export default function Home() {
 
   const handleStartPlanning = (e) => {
     e.preventDefault();
+
+    // Validation
+    const newErrors = {};
+    if (!eventData.budget || parseFloat(eventData.budget) <= 0) {
+      newErrors.budget = "Please enter a valid budget";
+    }
+    if (!eventData.guests || parseInt(eventData.guests) <= 0) {
+      newErrors.guests = "Please enter number of guests";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fill in all details to continue");
+      return;
+    }
+
+    setErrors({});
     setShowCategoriesModal(true);
   };
 
@@ -208,12 +227,19 @@ export default function Home() {
                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">₹</span>
                     <input
                       type="number"
-                      className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+                      className={`w-full border-2 rounded-xl pl-12 pr-4 py-3.5 focus:ring-2 outline-none transition-all bg-white ${errors.budget
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-100"
+                        }`}
                       placeholder="e.g., 50,000"
                       value={eventData.budget}
-                      onChange={(e) => setEventData({ ...eventData, budget: e.target.value })}
+                      onChange={(e) => {
+                        setEventData({ ...eventData, budget: e.target.value });
+                        if (errors.budget) setErrors({ ...errors, budget: null });
+                      }}
                     />
                   </div>
+                  {errors.budget && <p className="text-red-500 text-xs mt-1 animate-fadeIn">{errors.budget}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -224,12 +250,19 @@ export default function Home() {
                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">👥</span>
                     <input
                       type="number"
-                      className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+                      className={`w-full border-2 rounded-xl pl-12 pr-4 py-3.5 focus:ring-2 outline-none transition-all bg-white ${errors.guests
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-100"
+                        : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-100"
+                        }`}
                       placeholder="e.g., 100"
                       value={eventData.guests}
-                      onChange={(e) => setEventData({ ...eventData, guests: e.target.value })}
+                      onChange={(e) => {
+                        setEventData({ ...eventData, guests: e.target.value });
+                        if (errors.guests) setErrors({ ...errors, guests: null });
+                      }}
                     />
                   </div>
+                  {errors.guests && <p className="text-red-500 text-xs mt-1 animate-fadeIn">{errors.guests}</p>}
                 </div>
               </div>
             </div>

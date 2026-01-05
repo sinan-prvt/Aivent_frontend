@@ -3,9 +3,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ProductForm from "../components/ProductForm";
 import { useCreateProduct } from "../hooks/useCreateProduct";
+import { useParams } from "react-router-dom";
 
 const VendorCreateProduct = () => {
     const navigate = useNavigate();
+    const { category: vendorCategory } = useParams();
     const mutation = useCreateProduct();
 
     const handleSubmit = (formData) => {
@@ -26,6 +28,7 @@ const VendorCreateProduct = () => {
             <ProductForm
                 onSubmit={handleSubmit}
                 isSubmitting={mutation.isPending}
+                vendorCategory={vendorCategory}
             />
         </div>
     );

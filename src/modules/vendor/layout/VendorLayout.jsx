@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar, FiUser } from "react-icons/fi";
+import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar, FiUser, FiLayers, FiBarChart2 } from "react-icons/fi";
 
 const SidebarItem = ({ to, icon: Icon, label, active }) => (
   <Link
@@ -89,6 +89,34 @@ export default function VendorLayout() {
                 icon={FiCalendar}
                 label="Bookings"
                 active={pathname.includes("/bookings")}
+              />
+            </>
+          ) : catId === "2" ? (
+            <>
+              {/* DECORATION SPECIFIC NAVIGATION */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label="Dashboard"
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/inventory`}
+                icon={FiBox}
+                label="Prop Inventory"
+                active={pathname.includes("/inventory")}
+              />
+              <SidebarItem
+                to={`${basePath}/decor-bookings`}
+                icon={FiList}
+                label="Bookings"
+                active={pathname.includes("/decor-bookings")}
+              />
+              <SidebarItem
+                to={`${basePath}/reports`}
+                icon={FiBarChart2}
+                label="Reports"
+                active={pathname.includes("/reports")}
               />
             </>
           ) : (

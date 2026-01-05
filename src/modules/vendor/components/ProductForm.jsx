@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useCategories } from "../../user/hooks/useCategories";
 import { getMediaUrl } from "@/core/utils/media";
 
-const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
+const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) => {
     const { data: categories } = useCategories();
     const [formData, setFormData] = useState({
         name: "",
@@ -14,9 +14,9 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         price: "",
         category: "",
         is_available: true,
-        image: null,
+        images: [],
     });
-    const [preview, setPreview] = useState(null);
+    const [previews, setPreviews] = useState([]);
 
     useEffect(() => {
         if (initialData) {
@@ -26,10 +26,12 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
                 price: initialData.price || "",
                 category: initialData.category?.id || initialData.category || "",
                 is_available: initialData.is_available ?? true,
-                image: null, // Keep image null unless changing
+                images: [],
             });
-            if (initialData.image) {
-                setPreview(initialData.image);
+            if (initialData.images && Array.isArray(initialData.images)) {
+                setPreviews(initialData.images);
+            } else if (initialData.image) {
+                setPreviews([initialData.image]);
             }
         }
     }, [initialData]);
@@ -43,11 +45,24 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     };
 
     const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData((prev) => ({ ...prev, image: file }));
-            setPreview(URL.createObjectURL(file));
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            setFormData((prev) => ({
+                ...prev,
+                images: [...prev.images, ...files]
+            }));
+
+            const newPreviews = files.map(file => URL.createObjectURL(file));
+            setPreviews(prev => [...prev, ...newPreviews]);
         }
+    };
+
+    const removeImage = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index)
+        }));
+        setPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = (e) => {
@@ -56,13 +71,37 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
         data.append("name", formData.name);
         data.append("description", formData.description);
         data.append("price", formData.price);
-        data.append("category", formData.category); // Assuming ID
+        data.append("category", formData.category);
         data.append("is_available", formData.is_available);
-        if (formData.image) {
-            data.append("image", formData.image);
+
+        // Append the first image as the main 'image' field for the backend
+        if (formData.images.length > 0) {
+            data.append("image", formData.images[0]);
         }
+
+        // Append all images as 'images' (legacy/future support)
+        formData.images.forEach((image) => {
+            data.append("images", image);
+        });
+
         onSubmit(data);
     };
+
+    // Helper to find category ID by name
+    const getCategoryIdByName = (name) => {
+        if (!categories) return "";
+        const cat = categories.find(c => c.name.toLowerCase().includes(name.toLowerCase()));
+        return cat ? cat.id : "";
+    };
+
+    // Requested Decoration Categories
+    const decorCategories = [
+        "Wedding",
+        "Floral",
+        "Theme",
+        "Mandap",
+        "Table"
+    ];
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
@@ -113,29 +152,66 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
                     >
                         <option value="">Select a Category</option>
-                        {categories?.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
+                        {vendorCategory === "decoration" ? (
+                            // Decoration Specific Options
+                            decorCategories.map((name) => {
+                                // Try to match by name, otherwise fallback to index+offset if needed or just disable? 
+                                // Best effort: Match strict name or show name but value might be empty if not in DB.
+                                // If categories are not loaded yet, this will be empty options.
+                                const id = getCategoryIdByName(name);
+                                // Fallback: If "Wedding" not found, use a generic "Wedding" placeholder ID? 
+                                // No, that fails FK. 
+                                // If not found, we use the Main Decoration ID (id=2) as a safe fallback?
+                                // Actually, let's list them. If id is empty, value is empty, so it prompts selection.
+                                return (
+                                    <option key={name} value={id || getCategoryIdByName("Decoration") || "2"}>
+                                        {name} {id ? "" : "(Default to General)"}
+                                    </option>
+                                );
+                            })
+                        ) : (
+                            // Standard Categories
+                            categories?.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))
+                        )}
                     </select>
                 </div>
 
                 <div className="col-span-2">
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                        {previews.map((src, index) => (
+                            <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200">
+                                <img src={src} alt={`Preview ${index}`} className="h-full w-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                        <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span className="mt-2 text-[10px] font-bold text-gray-500 uppercase">Add More</span>
                             <input
                                 type="file"
                                 accept="image/*"
+                                multiple
                                 onChange={handleImageChange}
-                                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                                className="hidden"
                             />
-                        </div>
-                        {preview && (
-                            <div className="h-20 w-20 rounded-lg overflow-hidden border border-gray-200">
-                                <img src={getMediaUrl(preview)} alt="Preview" className="h-full w-full object-cover" />
-                            </div>
-                        )}
+                        </label>
                     </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                        {vendorCategory === "decoration" ? "First image will be used as the main cover." : ""}
+                    </p>
                 </div>
 
                 <div className="col-span-2">

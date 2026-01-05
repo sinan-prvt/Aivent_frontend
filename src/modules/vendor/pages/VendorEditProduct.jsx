@@ -6,7 +6,7 @@ import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useVendorProductDetail } from "../hooks/useVendorProductDetail";
 
 const VendorEditProduct = () => {
-    const { id } = useParams();
+    const { id, category: vendorCategory } = useParams();
     const navigate = useNavigate();
     const { data: product, isLoading, error } = useVendorProductDetail(id);
     const mutation = useUpdateProduct();
@@ -49,6 +49,7 @@ const VendorEditProduct = () => {
                 initialData={product}
                 onSubmit={handleSubmit}
                 isSubmitting={mutation.isPending}
+                vendorCategory={vendorCategory}
             />
         </div>
     );

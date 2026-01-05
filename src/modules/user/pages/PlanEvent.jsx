@@ -76,8 +76,8 @@ const PlanEvent = () => {
                     </div>
 
                     {/* Categories Tabs */}
-                    <div className="border-b border-gray-200 overflow-x-auto">
-                        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <div className="border-b border-gray-200">
+                        <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Tabs">
                             {(initialState.categories.length > 0 ? initialState.categories : ["Venue", "Catering", "Photography", "Music"]).map((tab) => (
                                 <button
                                     key={tab}
@@ -85,7 +85,7 @@ const PlanEvent = () => {
                                     className={`${activeTab === tab
                                         ? "border-indigo-500 text-indigo-600"
                                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                                        } py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap`}
                                 >
                                     {tab}
                                 </button>
