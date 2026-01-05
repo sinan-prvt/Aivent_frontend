@@ -2,9 +2,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAdminProducts } from "../api/catalog.api";
 
-export const usePendingProducts = () => {
+export const useAdminProducts = (status) => {
     return useQuery({
-        queryKey: ["admin-pending-products"],
-        queryFn: () => getAdminProducts({ status: "pending" }),
+        queryKey: ["admin-products", status],
+        queryFn: () => getAdminProducts({ status }),
     });
 };

@@ -25,10 +25,16 @@ const PlanEvent = () => {
     // Fetch Categories
     const { data: categories } = useCategories();
 
-    // Fetch Products (Mocking filters for now)
+    // Get the category ID for the active tab - make matching flexible
+    const activeCategoryId = categories?.find(
+        (cat) => cat.name.trim().toLowerCase() === activeTab.trim().toLowerCase()
+    )?.id;
+
+    // Fetch Products filtered by category
     const { data: products, isLoading } = useQuery({
-        queryKey: ["products", activeTab],
-        queryFn: () => getProducts({ search: activeTab }), // Just searching by tab name for now
+        queryKey: ["products", activeCategoryId],
+        queryFn: () => getProducts({ category: activeCategoryId }),
+        enabled: !!activeCategoryId, // Only fetch if we have a category ID
     });
 
     // Calculate Budget Stats
@@ -127,6 +133,18 @@ const PlanEvent = () => {
                                     const isSelected = selectedItems.find(i => i.id === product.id);
                                     return (
                                         <div key={product.id} className={`bg-white rounded-2xl p-4 shadow-sm border transition-all hover:shadow-md ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-gray-100'}`}>
+                                            {/* Product Image */}
+                                            {product.image && (
+                                                <div className="mb-4 rounded-xl overflow-hidden h-48 bg-gray-100">
+                                                    <img
+                                                        src={product.image}
+                                                        alt={product.name}
+                                                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                                                        onClick={() => navigate(`/products/${product.id}`)}
+                                                    />
+                                                </div>
+                                            )}
+
                                             <div onClick={() => navigate(`/products/${product.id}`)} className="cursor-pointer group">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>

@@ -25,8 +25,11 @@ export default function Navbar() {
           px-6 py-3 flex items-center justify-between
         "
       >
-        <Link to="/" className="text-2xl font-bold text-indigo-600">
-          Aivent
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center transform transition-transform group-hover:scale-110">
+            <img src='/logo.png' className='size-7 filter brightness-0 invert' />
+          </div>
+          <span className="text-2xl font-bold text-gray-900 tracking-tight">Aivent</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
@@ -38,9 +41,6 @@ export default function Navbar() {
             Events
           </NavLink>
 
-          <NavLink to="/vendors" className={linkClass}>
-            Vendors
-          </NavLink>
 
           <NavLink to="/vendor/apply" className={linkClass}>
             Business

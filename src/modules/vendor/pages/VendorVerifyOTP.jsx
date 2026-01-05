@@ -44,7 +44,7 @@ export default function VendorVerifyOTP() {
 
   if (!vendor_id || !email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <div className="max-w-sm w-full">
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -191,7 +191,7 @@ export default function VendorVerifyOTP() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center p-4">
       <div className="max-w-sm w-full">
         {/* Back Button - Compact */}
         <button
@@ -388,7 +388,7 @@ export default function VendorVerifyOTP() {
             <p className="text-gray-600 text-sm mb-4">
               Account verified successfully
             </p>
-            <div className="w-10 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full mx-auto"></div>
+            <div className="w-10 h-1 bg-linear-to-r from-green-400 to-blue-500 rounded-full mx-auto"></div>
           </div>
         </div>
       )}

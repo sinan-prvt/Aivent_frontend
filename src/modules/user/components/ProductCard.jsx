@@ -1,6 +1,6 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
+import { getMediaUrl } from "@/core/utils/media";
 
 const ProductCard = ({ product }) => {
     return (
@@ -11,7 +11,7 @@ const ProductCard = ({ product }) => {
             <div className="aspect-square bg-gray-100 relative overflow-hidden">
                 {product.image ? (
                     <img
-                        src={product.image}
+                        src={getMediaUrl(product.image)}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

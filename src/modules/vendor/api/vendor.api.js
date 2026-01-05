@@ -23,6 +23,10 @@ export const resendVendorOTP = (payload) =>
 export const fetchVendorMe = () =>
   vendorApi.get("/me/");
 
+/* Update vendor profile */
+export const updateVendorProfile = (payload) =>
+  vendorApi.patch("/me/", payload);
+
 /* Get vendor status */
 export const getVendorStatus = () =>
   vendorApi.get("/status/");

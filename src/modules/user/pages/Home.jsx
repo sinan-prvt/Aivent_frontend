@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/layout/Navbar";
 import { useAuth } from "../../../app/providers/AuthProvider";
+import { useCategories } from "../hooks/useCategories";
 
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [eventData, setEventData] = useState({
@@ -47,38 +49,23 @@ export default function Home() {
   const handleGeneratePlan = () => {
     setShowCategoriesModal(false);
     setSelectedCategories([]);
-    
+
     if (user) {
-      navigate("/dashboard/plan", { 
-        state: { 
-          eventData, 
-          categories: selectedCategories 
-        } 
+      navigate("/dashboard/plan", {
+        state: {
+          eventData,
+          categories: selectedCategories
+        }
       });
     } else {
-      navigate("/register", { 
-        state: { 
-          eventData, 
-          categories: selectedCategories 
-        } 
+      navigate("/register", {
+        state: {
+          eventData,
+          categories: selectedCategories
+        }
       });
     }
   };
-
-  const eventCategories = [
-    { name: "Venue", icon: "🏛️" },
-    { name: "Catering", icon: "🍽️" },
-    { name: "Food", icon: "🍕" },
-    { name: "Stage", icon: "🎭" },
-    { name: "Lighting", icon: "💡" },
-    { name: "Entertainment", icon: "🎤" },
-    { name: "Invitations", icon: "✉️" },
-    { name: "Decor", icon: "🎨" },
-    { name: "Photography", icon: "📸" },
-    { name: "Transportation", icon: "🚗" },
-    { name: "Accommodation", icon: "🏨" },
-    { name: "Security", icon: "🛡️" }
-  ];
 
   const eventTypes = [
     { name: "Wedding", color: "from-pink-500 to-rose-500" },
@@ -121,24 +108,29 @@ export default function Home() {
                 ✕
               </button>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
-              {eventCategories.map((category) => (
-                <button
-                  key={category.name}
-                  onClick={() => handleCategoryChange(category.name)}
-                  className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                    selectedCategories.includes(category.name)
+              {categoriesLoading ? (
+                <div className="col-span-full text-center py-8 text-gray-500">Loading categories...</div>
+              ) : categories && categories.length > 0 ? (
+                categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.name)}
+                    className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 ${selectedCategories.includes(category.name)
                       ? "border-indigo-500 bg-indigo-50 transform scale-105"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="text-2xl mb-2">{category.icon}</span>
-                  <span className="font-medium text-gray-800 text-sm">{category.name}</span>
-                </button>
-              ))}
+                      }`}
+                  >
+                    <span className="text-2xl mb-2">{category.icon || "📦"}</span>
+                    <span className="font-medium text-gray-800 text-sm">{category.name}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-gray-500">No categories available</div>
+              )}
             </div>
-            
+
             <div className="flex justify-between items-center pt-6 border-t">
               <div>
                 <span className="text-sm text-gray-600">
@@ -158,11 +150,10 @@ export default function Home() {
                 <button
                   onClick={handleGeneratePlan}
                   disabled={selectedCategories.length === 0}
-                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                    selectedCategories.length === 0
-                      ? "bg-gray-200 cursor-not-allowed text-gray-400"
-                      : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  }`}
+                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${selectedCategories.length === 0
+                    ? "bg-gray-200 cursor-not-allowed text-gray-400"
+                    : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    }`}
                 >
                   Continue to Planning →
                 </button>
@@ -180,7 +171,7 @@ export default function Home() {
             <span className="block">Perfected.</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Streamline your entire event workflow with AI-powered tools, vendor management, 
+            Streamline your entire event workflow with AI-powered tools, vendor management,
             and real-time collaboration—all in one professional platform.
           </p>
         </div>
@@ -192,16 +183,16 @@ export default function Home() {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
                 Begin Your Event Journey
               </h3>
-              
+
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
                     Event Type
                   </label>
-                  <select 
+                  <select
                     className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
                     value={eventData.eventType}
-                    onChange={(e) => setEventData({...eventData, eventType: e.target.value})}
+                    onChange={(e) => setEventData({ ...eventData, eventType: e.target.value })}
                   >
                     {eventTypes.map(type => (
                       <option key={type.name} value={type.name}>{type.name}</option>
@@ -220,7 +211,7 @@ export default function Home() {
                       className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
                       placeholder="e.g., 50,000"
                       value={eventData.budget}
-                      onChange={(e) => setEventData({...eventData, budget: e.target.value})}
+                      onChange={(e) => setEventData({ ...eventData, budget: e.target.value })}
                     />
                   </div>
                 </div>
@@ -236,7 +227,7 @@ export default function Home() {
                       className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
                       placeholder="e.g., 100"
                       value={eventData.guests}
-                      onChange={(e) => setEventData({...eventData, guests: e.target.value})}
+                      onChange={(e) => setEventData({ ...eventData, guests: e.target.value })}
                     />
                   </div>
                 </div>
@@ -244,7 +235,7 @@ export default function Home() {
             </div>
 
             <div className="lg:w-auto">
-              <button 
+              <button
                 onClick={handleStartPlanning}
                 className="w-full lg:w-auto px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0"
               >
@@ -384,7 +375,7 @@ export default function Home() {
                 Professional event planning platform powered by AI and industry expertise.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-lg mb-6 text-gray-300">Product</h4>
               <ul className="space-y-3">

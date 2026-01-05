@@ -2,21 +2,21 @@
 import catalogApi from "../../../core/api/catalogAxios";
 
 export const getCategories = async () => {
-    const response = await catalogApi.get("/catalog/categories/");
+    const response = await catalogApi.get("/categories/");
     return response.data;
 };
 
 export const getCategoryProducts = async (slug) => {
-    const response = await catalogApi.get(`/catalog/categories/${slug}/products/`);
+    const response = await catalogApi.get(`/categories/${slug}/products/`);
     return response.data;
 };
 
 export const getProducts = async (params = {}) => {
-    const response = await catalogApi.get("/catalog/products/", { params });
+    const response = await catalogApi.get("/products/", { params });
     return response.data;
 };
 
 export const getProductDetail = async (id) => {
-    const response = await catalogApi.get(`/catalog/products/${id}/`);
+    const response = await catalogApi.get(`/products/${id}/`);
     return response.data;
 };

@@ -1,11 +1,12 @@
 
 import React from "react";
-import { usePendingProducts } from "../hooks/usePendingProducts";
+import { useAdminProducts } from "../hooks/usePendingProducts";
 import { useReviewProduct } from "../hooks/useReviewProduct";
 import ReviewCard from "../components/ReviewCard";
 
 const AdminProductList = () => {
-    const { data: products, isLoading, error } = usePendingProducts();
+    const [activeTab, setActiveTab] = React.useState("pending");
+    const { data: products, isLoading, error } = useAdminProducts(activeTab);
     const mutation = useReviewProduct();
 
     const handleApprove = (id) => {
@@ -15,7 +16,6 @@ const AdminProductList = () => {
     };
 
     const handleReject = (id) => {
-        // In a real app we might ask for a reason
         if (window.confirm("Reject this product?")) {
             mutation.mutate({ id, action: "reject" });
         }
@@ -24,7 +24,7 @@ const AdminProductList = () => {
     if (isLoading) {
         return (
             <div className="container mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">Pending Reviews</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">Product Reviews</h1>
                 <div className="space-y-4 animate-pulse">
                     {[...Array(3)].map((_, i) => (
                         <div key={i} className="h-40 bg-gray-100 rounded-lg"></div>
@@ -37,25 +37,63 @@ const AdminProductList = () => {
     if (error) {
         return (
             <div className="container mx-auto px-4 py-8 text-center text-red-500">
-                Error loading pending products.
+                Error loading products.
             </div>
         );
     }
 
+    const filteredProducts = products?.filter(p => {
+        try {
+            const meta = JSON.parse(p.description);
+            return meta.type !== 'menu';
+        } catch (e) {
+            return true; // Keep legacy or non-JSON products
+        }
+    }) || [];
+
+    const tabs = [
+        { id: "pending", label: "Pending", color: "amber" },
+        { id: "approved", label: "Approved", color: "green" },
+        { id: "rejected", label: "Rejected", color: "red" },
+    ];
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Product Reviews</h1>
+
+            <div className="flex gap-4 mb-8 border-b border-gray-100">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === tab.id
+                            ? "text-gray-900"
+                            : "text-gray-400 hover:text-gray-600"
+                            }`}
+                    >
+                        {tab.label}
+                        {activeTab === tab.id && (
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+                        )}
+                        <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === tab.id ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-400"
+                            }`}>
+                            {tab.id === activeTab ? filteredProducts.length : "-"}
+                        </span>
+                    </button>
+                ))}
+            </div>
+
             <p className="text-gray-500 mb-8">
-                There are {products?.length || 0} products waiting for your review.
+                Viewing {activeTab} products.
             </p>
 
             <div className="space-y-6">
-                {products?.length === 0 ? (
+                {filteredProducts.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-lg text-gray-400">
                         No pending products to review. Great job!
                     </div>
                 ) : (
-                    products?.map((product) => (
+                    filteredProducts.map((product) => (
                         <ReviewCard
                             key={product.id}
                             product={product}

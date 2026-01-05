@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar } from "react-icons/fi";
+import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar, FiUser } from "react-icons/fi";
 
 const SidebarItem = ({ to, icon: Icon, label, active }) => (
   <Link
@@ -111,16 +111,16 @@ export default function VendorLayout() {
 
           {/* COMMON NAVIGATION */}
           <SidebarItem
+            to={`${basePath}/profile`}
+            icon={FiUser}
+            label="Profile"
+            active={pathname.includes("/profile")}
+          />
+          <SidebarItem
             to={`${basePath}/inbox`}
             icon={FiMessageSquare}
             label="Messages"
             active={pathname.includes("/inbox")}
-          />
-          <SidebarItem
-            to={`${basePath}/settings`}
-            icon={FiSettings}
-            label="Settings"
-            active={pathname.includes("/settings")}
           />
         </nav>
 

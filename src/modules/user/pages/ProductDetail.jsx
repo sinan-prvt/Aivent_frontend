@@ -12,12 +12,64 @@ import {
     FiMaximize,
     FiUser
 } from "react-icons/fi";
+import { getMediaUrl } from "@/core/utils/media";
 
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: product, isLoading, error } = useProductDetail(id);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [linkedMenus, setLinkedMenus] = useState([]);
+    const [vendorDetail, setVendorDetail] = useState(null);
+
+    // Parse metadata from description
+    const meta = React.useMemo(() => {
+        try {
+            return JSON.parse(product?.description || '{}');
+        } catch (e) {
+            return { description: product?.description };
+        }
+    }, [product?.description]);
+
+    // Effect to fetch linked menus if it's a catering package
+    React.useEffect(() => {
+        if (meta?.type === 'package') {
+            const fetchMenus = async () => {
+                const ids = [];
+                if (meta.menuSelections) {
+                    Object.values(meta.menuSelections).forEach(selection => {
+                        if (selection) {
+                            if (Array.isArray(selection)) {
+                                selection.forEach(id => { if (id) ids.push(id); });
+                            } else {
+                                ids.push(selection);
+                            }
+                        }
+                    });
+                } else if (meta.linkedMenuId) {
+                    ids.push(meta.linkedMenuId);
+                }
+
+                if (ids.length > 0) {
+                    const api = await import('../api/catalog.api');
+                    const menus = await Promise.all(ids.map(id => api.getProductDetail(id).catch(() => null)));
+                    setLinkedMenus(menus.filter(m => m !== null));
+                }
+            };
+            fetchMenus();
+        }
+    }, [meta?.menuSelections, meta?.linkedMenuId, meta?.type]);
+
+    // Effect to fetch vendor details
+    React.useEffect(() => {
+        if (product?.vendor_id) {
+            import('../api/vendor.api').then(api => {
+                api.getPublicVendorDetail(product.vendor_id).then(vendor => {
+                    setVendorDetail(vendor);
+                }).catch(err => console.error("Failed to fetch vendor", err));
+            });
+        }
+    }, [product?.vendor_id]);
 
     if (isLoading) {
         return (
@@ -35,12 +87,8 @@ const ProductDetail = () => {
         );
     }
 
-    if (error || !product) return <div>Product not found</div>;
+    if (error || !product) return <div className="p-20 text-center font-bold">Product not found</div>;
 
-    // Mock images for gallery if array doesn't exist
-    const images = product.images || [product.image];
-
-    // Mock features/services if not in API
     const services = [
         "In-house Catering",
         "Audio/Visual Equipment",
@@ -83,14 +131,14 @@ const ProductDetail = () => {
                 <div className="mb-8">
                     <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-lg h-[400px] md:h-[500px] relative group">
                         <img
-                            src={product.image}
+                            src={getMediaUrl(product.image)}
                             alt={product.name}
                             className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
                         />
                         {/* Thumbnails Overlay */}
                         <div className="absolute bottom-6 right-6 flex gap-3">
                             <div className="w-16 h-16 rounded-xl border-2 border-white overflow-hidden shadow-lg">
-                                <img src={product.image} className="w-full h-full object-cover" />
+                                <img src={getMediaUrl(product.image)} className="w-full h-full object-cover" />
                             </div>
                             <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold border border-white/30 cursor-pointer hover:bg-white/30 transition">
                                 <span className="flex items-center gap-1 text-sm"><FiMaximize /> All</span>
@@ -109,11 +157,11 @@ const ProductDetail = () => {
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
                                     <div className="flex items-center text-gray-500 font-medium">
                                         <FiMapPin className="mr-2 text-indigo-600" />
-                                        Downtown, Metropolis
+                                        {vendorDetail?.location || "Downtown, Metropolis"}
                                     </div>
                                 </div>
                                 <div className="bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border border-yellow-100">
-                                    <FiStar className="fill-current" /> 4.9 (124 reviews)
+                                    <FiStar className="fill-current" /> {vendorDetail?.rating || "4.9"} ({vendorDetail?.reviews_count || "124"} reviews)
                                 </div>
                             </div>
 
@@ -152,10 +200,10 @@ const ProductDetail = () => {
 
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                 <h3 className="font-bold text-indigo-900 flex items-center gap-2 mb-4">
-                                    <FiCheckCircle /> Available Services
+                                    <FiCheckCircle /> {meta?.type === 'package' ? 'Package Features' : 'Available Services'}
                                 </h3>
                                 <div className="space-y-2">
-                                    {services.map((service, i) => (
+                                    {(meta?.features || services).map((service, i) => (
                                         <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
                                             <FiCheckCircle className="text-green-500 shrink-0" /> {service}
                                         </div>
@@ -163,6 +211,61 @@ const ProductDetail = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Catering Menu Section */}
+                        {linkedMenus.length > 0 && (
+                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-8">
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                                    <h3 className="text-2xl font-bold text-gray-900">Package Menu Details</h3>
+                                    <span className="text-indigo-600 font-bold bg-indigo-50 px-4 py-1 rounded-full text-sm">
+                                        Professional Catering
+                                    </span>
+                                </div>
+
+                                <div className="space-y-10">
+                                    {(() => {
+                                        const aggregatedSections = {};
+                                        linkedMenus.forEach(menu => {
+                                            try {
+                                                const sections = JSON.parse(menu.description).sections;
+                                                Object.entries(sections).forEach(([title, items]) => {
+                                                    if (items.length > 0) {
+                                                        aggregatedSections[title] = [...(aggregatedSections[title] || []), ...items];
+                                                    }
+                                                });
+                                            } catch (e) { }
+                                        });
+
+                                        return Object.entries(aggregatedSections).map(([title, items]) => (
+                                            <div key={title} className="space-y-4">
+                                                <h4 className="text-sm font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                                                    <span className="w-2 h-2 bg-indigo-600 rounded-full"></span>
+                                                    {title === 'main' ? 'Main Course' : title}
+                                                </h4>
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    {items.map((item, idx) => (
+                                                        <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
+                                                            {item.image && (
+                                                                <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                                                                    <img src={getMediaUrl(item.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1">
+                                                                <div className="flex justify-between items-start">
+                                                                    <h5 className="font-bold text-gray-900">{item.name}</h5>
+                                                                    {item.price && <span className="text-sm font-bold text-indigo-600">₹{item.price}</span>}
+                                                                </div>
+                                                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.desc}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Reviews */}
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
@@ -204,8 +307,8 @@ const ProductDetail = () => {
                         <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
                             <h4 className="font-bold text-gray-900">Pricing</h4>
                             <div className="mt-2 mb-6">
-                                <span className="text-4xl font-bold text-indigo-600">${parseFloat(product.price).toLocaleString()}</span>
-                                <span className="text-gray-500 text-sm"> / event package</span>
+                                <span className="text-4xl font-bold text-indigo-600">₹{parseFloat(product.price).toLocaleString()}</span>
+                                <span className="text-gray-500 text-sm"> / {meta?.type === 'package' ? 'person' : 'event package'}</span>
                             </div>
                             <p className="text-xs text-gray-500 mb-6">
                                 Includes standard setup, 6-hour rental, and basic staff. Custom packages available.
@@ -254,11 +357,11 @@ const ProductDetail = () => {
             <ChatModal
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
-                vendorId={product?.vendor_id || product?.id}
-                vendorName={product?.vendor_name || product?.name || "Vendor"}
-                vendorImage={product?.vendor_image || product?.image}
-                vendorCategory={product?.category || "Service"}
-                vendorRating={product?.rating || 4.9}
+                vendorId={product?.vendor_id}
+                vendorName={vendorDetail?.business_name || product?.name || "Vendor"}
+                vendorImage={getMediaUrl(vendorDetail?.profile_image) || getMediaUrl(product?.image)}
+                vendorCategory={product?.category_name || "Service"}
+                vendorRating={vendorDetail?.rating || 4.9}
             />
         </div>
     );

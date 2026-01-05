@@ -16,6 +16,17 @@ const CategoryProducts = () => {
         );
     }
 
+    const filteredProducts = products?.filter(p => {
+        try {
+            const meta = JSON.parse(p.description);
+            // In Catering, we only want to show packages publicly.
+            // If it's a menu/dish, hide it from the grid.
+            return meta.type !== 'menu';
+        } catch (e) {
+            return true;
+        }
+    });
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
@@ -23,11 +34,11 @@ const CategoryProducts = () => {
                     {slug?.replace(/-/g, " ")}
                 </h1>
                 <p className="text-gray-500 mt-2">
-                    Explore products in this category
+                    Explore items in this category
                 </p>
             </div>
 
-            <ProductGrid products={products} isLoading={isLoading} />
+            <ProductGrid products={filteredProducts} isLoading={isLoading} />
         </div>
     );
 };

@@ -36,6 +36,7 @@ import VendorLayout from "../../modules/vendor/layout/VendorLayout.jsx";
 import VendorDashboardHome from "../../modules/vendor/dashboard/VendorDashboardHome.jsx";
 import VendorAuthGuard from "../../modules/vendor/guards/VendorAuthGuard.jsx";
 import VendorApprovedGuard from "../../modules/vendor/guards/VendorApprovedGuard.jsx";
+import VendorProfile from "../../modules/vendor/pages/VendorProfile";
 import PublicLayout from "../../components/layout/PublicLayout.jsx";
 
 /* Vendor */
@@ -216,6 +217,9 @@ export default function AppRouter() {
 
           {/* Chat/Inbox */}
           <Route path="inbox" element={<VendorInbox />} />
+
+          {/* Profile */}
+          <Route path="profile" element={<VendorProfile />} />
         </Route>
       </Route>
 

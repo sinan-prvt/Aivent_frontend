@@ -9,8 +9,8 @@ export default function AdminNavbar() {
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    { name: 'Products', path: '/admin/products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { name: 'Users', path: '/admin/users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-6.197a4 4 0 00-4-4m4 4a4 4 0 010 8m-4-4a4 4 0 100-8' },
-    { name: 'Vendors', path: '/admin/vendors', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     { name: 'Analytics', path: '/admin/analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Settings', path: '/admin/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
   ];
@@ -22,10 +22,9 @@ export default function AdminNavbar() {
 
 
   const linkClass = ({ isActive }) =>
-    `px-3 py-1 text-sm font-medium transition-colors inline-flex items-center rounded-full ${
-      isActive 
-        ? 'bg-indigo-50 text-indigo-700' 
-        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+    `px-3 py-1 text-sm font-medium transition-colors inline-flex items-center rounded-full ${isActive
+      ? 'bg-indigo-50 text-indigo-700'
+      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
     }`;
 
   return (
@@ -35,11 +34,11 @@ export default function AdminNavbar() {
         <div className="flex items-center space-x-8">
           <Link to="/admin" className="flex items-center space-x-2">
             <div className="h-8 w-15 bg-gradient-to-r  rounded-lg flex items-center justify-center">
-              <img src='logo.png' className='size-17'/>
+              <img src='/logo.png' className='size-13' />
             </div>
             <span className="text-xl font-bold text-gray-900">Admin Panel</span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => (
@@ -86,7 +85,7 @@ export default function AdminNavbar() {
                 <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>
-            
+
             {/* Dropdown menu */}
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-100">
               <Link
@@ -139,10 +138,9 @@ export default function AdminNavbar() {
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center px-3 py-3 rounded-md text-base font-medium ${
-                      isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    `flex items-center px-3 py-3 rounded-md text-base font-medium ${isActive
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }`
                   }
                   end={item.path === '/admin'}
@@ -158,7 +156,7 @@ export default function AdminNavbar() {
                   {item.name}
                 </NavLink>
               ))}
-              
+
               <div className="border-t border-gray-200 pt-4 mt-2">
                 <div className="flex items-center px-3 py-3">
                   <div className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">

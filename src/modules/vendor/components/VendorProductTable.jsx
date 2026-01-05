@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import ProductStatusBadge from "./ProductStatusBadge";
+import { getMediaUrl } from "@/core/utils/media";
 import { FiEdit2, FiTrash2, FiEye } from "react-icons/fi"; // Assuming react-icons is installed
 
 const VendorProductTable = ({ products, isLoading, onDelete }) => {
@@ -49,7 +50,7 @@ const VendorProductTable = ({ products, isLoading, onDelete }) => {
                                         {product.image ? (
                                             <img
                                                 className="h-10 w-10 rounded object-cover"
-                                                src={product.image}
+                                                src={getMediaUrl(product.image)}
                                                 alt={product.name}
                                             />
                                         ) : (

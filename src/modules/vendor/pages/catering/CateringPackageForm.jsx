@@ -1,29 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiX, FiUpload, FiTrash2, FiBookOpen } from 'react-icons/fi';
 import { useCreateProduct } from '../../hooks/useCreateProduct';
+import { useUpdateProduct } from '../../hooks/useUpdateProduct';
 import { useVendorProducts } from '../../hooks/useVendorProducts';
 import { useCategories } from '../../../user/hooks/useCategories';
+import { getMediaUrl } from '@/core/utils/media';
 
-export default function CateringPackageForm({ onClose, onSuccess }) {
-    const mutation = useCreateProduct();
+export default function CateringPackageForm({ onClose, onSuccess, initialData }) {
+    const createMutation = useCreateProduct();
+    const updateMutation = useUpdateProduct();
+    const mutation = initialData ? updateMutation : createMutation;
     const { data: products } = useVendorProducts();
     const { data: categories } = useCategories();
 
-    // Filter for Menus
+    // Filter for Menus by their categories
     const menus = products?.filter(p => {
         try { return JSON.parse(p.description).type === 'menu'; } catch (e) { return false; }
     }) || [];
 
+    const getMenusByType = (type) => {
+        return menus.filter(m => {
+            try {
+                const meta = JSON.parse(m.description);
+                // Include if it's a direct match OR if it's a legacy menu (no menuType)
+                return meta.menuType === type || !meta.menuType || meta.menuType === 'full';
+            } catch (e) {
+                // Treat non-JSON or parsing errors as potential legacy full menus
+                return true;
+            }
+        });
+    };
+
     const [formData, setFormData] = useState({
-        name: '',
-        price: '',
+        name: initialData?.name || '',
+        price: initialData?.price || '',
         description: '',
-        features: [''], // Start with one empty feature
+        features: [''],
         image: null,
-        linkedMenuId: '',
-        categoryId: ''
+        linkedMenuId: '', // Legacy support
+        menuSelections: {
+            starters: [],
+            main: [],
+            dessert: [],
+            beverages: []
+        },
+        categoryId: initialData?.category?.id || initialData?.category || ''
     });
-    const [preview, setPreview] = useState(null);
+    const [preview, setPreview] = useState(initialData?.image || null);
+
+    // Initialize from initialData (description JSON)
+    useEffect(() => {
+        if (initialData?.description) {
+            try {
+                const meta = JSON.parse(initialData.description);
+                if (meta.type === 'package') {
+                    setFormData(prev => ({
+                        ...prev,
+                        description: meta.description || '',
+                        features: meta.features?.length ? meta.features : [''],
+                        linkedMenuId: meta.linkedMenuId || '',
+                        menuSelections: meta.menuSelections || {
+                            starters: meta.linkedMenuId ? [meta.linkedMenuId] : [], // Migration support
+                            main: [],
+                            dessert: [],
+                            beverages: []
+                        }
+                    }));
+                }
+            } catch (e) {
+                setFormData(prev => ({ ...prev, description: initialData.description }));
+            }
+        }
+    }, [initialData]);
 
     // Auto-select Catering category
     useEffect(() => {
@@ -64,6 +112,19 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
         }
     };
 
+    const toggleMenuSelection = (course, id) => {
+        setFormData(prev => {
+            const current = prev.menuSelections[course] || [];
+            const updated = current.includes(id)
+                ? current.filter(item => item !== id)
+                : [...current, id];
+            return {
+                ...prev,
+                menuSelections: { ...prev.menuSelections, [course]: updated }
+            };
+        });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -72,8 +133,11 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
             type: 'package',
             description: formData.description,
             features: formData.features.filter(f => f.trim() !== ''),
-            linkedMenuId: formData.linkedMenuId
+            menuSelections: formData.menuSelections,
+            linkedMenuId: formData.menuSelections.main || formData.linkedMenuId || ''
         };
+
+        console.log("Saving Package MetaData:", metaData);
 
         const data = new FormData();
         data.append('name', formData.name);
@@ -85,12 +149,21 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
             data.append('image', formData.image);
         }
 
-        mutation.mutate(data, {
-            onSuccess: () => {
-                onSuccess();
-                onClose();
-            }
-        });
+        if (initialData) {
+            mutation.mutate({ id: initialData.id, data: data }, {
+                onSuccess: () => {
+                    onSuccess();
+                    onClose();
+                }
+            });
+        } else {
+            mutation.mutate(data, {
+                onSuccess: () => {
+                    onSuccess();
+                    onClose();
+                }
+            });
+        }
     };
 
     return (
@@ -123,7 +196,7 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Price per Person ($)</label>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Price per Person (₹)</label>
                             <input
                                 type="number"
                                 name="price"
@@ -135,21 +208,42 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">Include Menu</label>
-                            <div className="relative">
-                                <FiBookOpen className="absolute left-3 top-3.5 text-gray-400" />
-                                <select
-                                    name="linkedMenuId"
-                                    value={formData.linkedMenuId}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none"
-                                >
-                                    <option value="">No specific menu linked</option>
-                                    {menus.map(menu => (
-                                        <option key={menu.id} value={menu.id}>{menu.name}</option>
-                                    ))}
-                                </select>
+                        <div className="col-span-2 space-y-6">
+                            <label className="block text-sm font-bold text-gray-700">Compose Menu</label>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {['starters', 'main', 'dessert', 'beverages'].map(course => (
+                                    <div key={course} className="space-y-2">
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                            {course === 'main' ? 'Main Course' : course}
+                                        </label>
+                                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 max-h-48 overflow-y-auto space-y-1 custom-scrollbar">
+                                            {getMenusByType(course).length === 0 ? (
+                                                <p className="text-xs text-gray-400 py-2">No {course} items found.</p>
+                                            ) : (
+                                                getMenusByType(course).map(menu => (
+                                                    <label
+                                                        key={menu.id}
+                                                        className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors ${formData.menuSelections[course]?.includes(menu.id)
+                                                            ? 'bg-teal-50 text-teal-700'
+                                                            : 'hover:bg-white'
+                                                            }`}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                                            checked={formData.menuSelections[course]?.includes(menu.id)}
+                                                            onChange={() => toggleMenuSelection(course, menu.id)}
+                                                        />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-bold truncate">{menu.name}</p>
+                                                            {menu.price > 0 && <p className="text-[10px] opacity-70">₹{menu.price}</p>}
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -213,7 +307,7 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
                             {preview ? (
-                                <img src={preview} alt="Preview" className="h-48 w-full object-cover rounded-lg" />
+                                <img src={getMediaUrl(preview)} alt="Preview" className="h-48 w-full object-cover rounded-lg" />
                             ) : (
                                 <div className="flex flex-col items-center gap-2 text-gray-400">
                                     <div className="p-3 bg-gray-100 rounded-full group-hover:scale-110 transition-transform">
@@ -239,7 +333,7 @@ export default function CateringPackageForm({ onClose, onSuccess }) {
                             disabled={mutation.isPending}
                             className="px-8 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl font-bold shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {mutation.isPending ? 'Creating...' : 'Create Package'}
+                            {mutation.isPending ? (initialData ? 'Saving...' : 'Creating...') : (initialData ? 'Save Changes' : 'Create Package')}
                         </button>
                     </div>
                 </form>

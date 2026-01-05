@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 // We need categories for the dropdown. Pass them in or fetch them?
 // Generally better to pass them in or use the hook inside.
 import { useCategories } from "../../user/hooks/useCategories";
+import { getMediaUrl } from "@/core/utils/media";
 
 const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
     const { data: categories } = useCategories();
@@ -131,7 +132,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting }) => {
                         </div>
                         {preview && (
                             <div className="h-20 w-20 rounded-lg overflow-hidden border border-gray-200">
-                                <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+                                <img src={getMediaUrl(preview)} alt="Preview" className="h-full w-full object-cover" />
                             </div>
                         )}
                     </div>
