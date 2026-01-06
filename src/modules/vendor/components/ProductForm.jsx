@@ -13,6 +13,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
         description: "",
         price: "",
         category: "",
+        categoryName: "",
         is_available: true,
         images: [],
     });
@@ -25,6 +26,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                 description: initialData.description || "",
                 price: initialData.price || "",
                 category: initialData.category?.id || initialData.category || "",
+                categoryName: "Wedding", // Default to Wedding for UI if editing existing item (since generic maps to single ID)
                 is_available: initialData.is_available ?? true,
                 images: [],
             });
@@ -38,10 +40,21 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+
+        if (name === "category" && vendorCategory === "decoration") {
+            // value here is the Name (e.g. "Floral")
+            const id = getCategoryIdByName(value) || getCategoryIdByName("Decoration") || "2";
+            setFormData((prev) => ({
+                ...prev,
+                category: id,
+                categoryName: value
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: type === "checkbox" ? checked : value,
+            }));
+        }
     };
 
     const handleImageChange = (e) => {
@@ -147,7 +160,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                     <select
                         name="category"
                         required
-                        value={formData.category}
+                        value={vendorCategory === "decoration" ? formData.categoryName : formData.category}
                         onChange={handleChange}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
                     >
@@ -155,17 +168,10 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                         {vendorCategory === "decoration" ? (
                             // Decoration Specific Options
                             decorCategories.map((name) => {
-                                // Try to match by name, otherwise fallback to index+offset if needed or just disable? 
-                                // Best effort: Match strict name or show name but value might be empty if not in DB.
-                                // If categories are not loaded yet, this will be empty options.
-                                const id = getCategoryIdByName(name);
-                                // Fallback: If "Wedding" not found, use a generic "Wedding" placeholder ID? 
-                                // No, that fails FK. 
-                                // If not found, we use the Main Decoration ID (id=2) as a safe fallback?
-                                // Actually, let's list them. If id is empty, value is empty, so it prompts selection.
+                                // We use the NAME as the value to ensure uniqueness in the dropdown
                                 return (
-                                    <option key={name} value={id || getCategoryIdByName("Decoration") || "2"}>
-                                        {name} {id ? "" : "(Default to General)"}
+                                    <option key={name} value={name}>
+                                        {name}
                                     </option>
                                 );
                             })

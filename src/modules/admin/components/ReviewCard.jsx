@@ -3,9 +3,32 @@ import React from "react";
 import { Link } from "react-router-dom";
 import ReviewActions from "./ReviewActions";
 import { getMediaUrl } from "@/core/utils/media";
-import { format } from "date-fns"; // Assuming date-fns might be available, otherwise native date
+import { format } from "date-fns";
+import { getPublicVendorDetail } from "../../user/api/vendor.api";
+import { deleteAdminProduct } from "../api/catalog.api";
+import { FiTrash2, FiEdit2 } from "react-icons/fi";
+import { useQueryClient } from "@tanstack/react-query"; // Assuming date-fns might be available, otherwise native date
 
 const ReviewCard = ({ product, onApprove, onReject, isProcessing }) => {
+    const [vendor, setVendor] = React.useState(null);
+    const queryClient = useQueryClient();
+
+    React.useEffect(() => {
+        if (product.vendor_id) {
+            getPublicVendorDetail(product.vendor_id).then(setVendor).catch(() => { });
+        }
+    }, [product.vendor_id]);
+
+    const handleDelete = async () => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            try {
+                await deleteAdminProduct(product.id);
+                queryClient.invalidateQueries(["admin-products"]);
+            } catch (error) {
+                alert("Failed to delete product");
+            }
+        }
+    };
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-32 h-32 flex-shrink-0 bg-gray-50 rounded-md overflow-hidden flex items-center justify-center">
@@ -73,10 +96,35 @@ const ReviewCard = ({ product, onApprove, onReject, isProcessing }) => {
             </div>
 
             <div className="flex flex-col justify-between items-end gap-4 min-w-[140px]">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col items-end gap-1">
                     <Link to={`/admin/products/${product.id}/review`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800">
                         View Details
                     </Link>
+                    {vendor && (
+                        <span className="text-[10px] text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded">
+                            by {vendor.business_name}
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2 mt-auto">
+                    {/* Edit Button (Placeholder functionality for now) */}
+                    <button
+                        className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                        title="Edit Product"
+                        onClick={() => alert("Edit feature coming soon via Admin panel.")}
+                    >
+                        <FiEdit2 className="w-4 h-4" />
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        title="Delete Product"
+                        onClick={handleDelete}
+                    >
+                        <FiTrash2 className="w-4 h-4" />
+                    </button>
                 </div>
 
                 {product.status === 'pending' ? (

@@ -16,3 +16,8 @@ export const getProductDetail = async (id) => {
     const response = await adminCatalogApi.get(`/products/${id}/`);
     return response.data;
 };
+
+export const deleteAdminProduct = async (id) => {
+    const response = await adminCatalogApi.delete(`/products/${id}/`);
+    return response.data;
+};

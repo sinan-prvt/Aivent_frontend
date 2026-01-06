@@ -13,7 +13,13 @@ const VendorCreateProduct = () => {
     const handleSubmit = (formData) => {
         mutation.mutate(formData, {
             onSuccess: () => {
-                navigate("/vendor/products");
+                if (vendorCategory === 'decoration') {
+                    navigate("/vendor/decoration/dashboard/inventory");
+                } else if (vendorCategory === 'catering') {
+                    navigate("/vendor/catering/dashboard/menus");
+                } else {
+                    navigate("/vendor/" + vendorCategory + "/dashboard");
+                }
             },
         });
     };

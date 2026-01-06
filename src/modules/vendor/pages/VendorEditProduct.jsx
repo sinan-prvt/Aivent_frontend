@@ -16,7 +16,14 @@ const VendorEditProduct = () => {
             { id, data: formData },
             {
                 onSuccess: () => {
-                    navigate("/vendor/products");
+                    // Navigate back to the specific inventory page
+                    if (vendorCategory === 'decoration') {
+                        navigate("/vendor/decoration/dashboard/inventory");
+                    } else if (vendorCategory === 'catering') {
+                        navigate("/vendor/catering/dashboard/menus");
+                    } else {
+                        navigate("/vendor/products");
+                    }
                 },
             }
         );
