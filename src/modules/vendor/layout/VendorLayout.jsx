@@ -50,9 +50,7 @@ export default function VendorLayout() {
       <aside className="w-64 bg-white border-r border-gray-200 fixed h-full hidden md:flex flex-col">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              A
-            </div>
+            <img src="/logo.png" alt="Aivent" className="w-8 h-8 object-contain" />
             <span className="text-xl font-bold text-gray-900 tracking-tight">Aivent</span>
           </Link>
           <div className="mt-2 px-1">
@@ -117,6 +115,40 @@ export default function VendorLayout() {
                 icon={FiBarChart2}
                 label="Reports"
                 active={pathname.includes("/reports")}
+              />
+            </>
+          ) : catId === "3" ? (
+            <>
+              {/* LIGHTING & EFFECTS SPECIFIC NAVIGATION */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label="Dashboard"
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/equipment`}
+                icon={FiBox}
+                label="Equipment"
+                active={pathname.includes("/equipment")}
+              />
+              <SidebarItem
+                to={`${basePath}/schedule`}
+                icon={FiCalendar}
+                label="Schedule"
+                active={pathname.includes("/schedule")}
+              />
+              <SidebarItem
+                to={`${basePath}/lighting-bookings`}
+                icon={FiList}
+                label="Bookings"
+                active={pathname.includes("/lighting-bookings")}
+              />
+              <SidebarItem
+                to={`${basePath}/staff`}
+                icon={FiUser}
+                label="Staff"
+                active={pathname.includes("/staff")}
               />
             </>
           ) : (

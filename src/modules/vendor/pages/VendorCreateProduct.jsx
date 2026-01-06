@@ -17,6 +17,8 @@ const VendorCreateProduct = () => {
                     navigate("/vendor/decoration/dashboard/inventory");
                 } else if (vendorCategory === 'catering') {
                     navigate("/vendor/catering/dashboard/menus");
+                } else if (vendorCategory === 'lighting') {
+                    navigate("/vendor/lighting/dashboard/equipment");
                 } else {
                     navigate("/vendor/" + vendorCategory + "/dashboard");
                 }

@@ -19,8 +19,10 @@ const VendorProfile = () => {
         address: "",
         gst_number: "",
         business_type: "",
-        bank_account_number: "",
-        bank_ifsc: ""
+        bank_name: "",
+        account_number: "",
+        ifsc_code: "",
+        account_holder_name: ""
     });
     const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -39,8 +41,10 @@ const VendorProfile = () => {
                 address: profile.address || "",
                 gst_number: profile.gst_number || "",
                 business_type: profile.business_type || "individual",
-                bank_account_number: profile.bank_account_number || "",
-                bank_ifsc: profile.bank_ifsc || ""
+                bank_name: profile.bank_name || "",
+                account_number: profile.account_number || "",
+                ifsc_code: profile.ifsc_code || "",
+                account_holder_name: profile.account_holder_name || ""
             });
         }
     }, [profile]);
@@ -376,13 +380,16 @@ const VendorProfile = () => {
 
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Business Type (for Banking)
+                                                Bank Name *
                                             </label>
-                                            <select className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                                                <option>Current Account</option>
-                                                <option>Savings Account</option>
-                                                <option>Business Account</option>
-                                            </select>
+                                            <input
+                                                name="bank_name"
+                                                value={form.bank_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                placeholder="e.g. Chase Bank"
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
@@ -394,8 +401,8 @@ const VendorProfile = () => {
                                                     <FiCreditCard className="h-5 w-5 text-gray-400" />
                                                 </div>
                                                 <input
-                                                    name="bank_account_number"
-                                                    value={form.bank_account_number}
+                                                    name="account_number"
+                                                    value={form.account_number}
                                                     onChange={handleChange}
                                                     required
                                                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono"
@@ -406,16 +413,30 @@ const VendorProfile = () => {
 
                                         <div className="space-y-2">
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Bank IFSC Code *
+                                                Bank IFSC/Routing Code *
                                             </label>
                                             <input
-                                                name="bank_ifsc"
-                                                value={form.bank_ifsc}
+                                                name="ifsc_code"
+                                                value={form.ifsc_code}
                                                 onChange={handleChange}
                                                 required
                                                 className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors uppercase font-mono tracking-wider"
                                                 placeholder="SBIN0001234"
-                                                maxLength="11"
+                                                maxLength="15"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Account Holder Name *
+                                            </label>
+                                            <input
+                                                name="account_holder_name"
+                                                value={form.account_holder_name}
+                                                onChange={handleChange}
+                                                required
+                                                className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                placeholder="Enter account holder name"
                                             />
                                         </div>
                                     </div>

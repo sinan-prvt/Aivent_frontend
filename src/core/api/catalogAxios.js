@@ -52,6 +52,7 @@ catalogApi.interceptors.response.use(
         return catalogApi(original);
       } catch (e) {
         clearTokens();
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

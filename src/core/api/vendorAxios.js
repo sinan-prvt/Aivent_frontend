@@ -51,6 +51,7 @@ vendorApi.interceptors.response.use(
         return vendorApi(original);
       } catch (e) {
         clearTokens();
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

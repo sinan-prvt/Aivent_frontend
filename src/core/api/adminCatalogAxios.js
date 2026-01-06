@@ -44,6 +44,7 @@ adminCatalogApi.interceptors.response.use(
                 return adminCatalogApi(original);
             } catch (e) {
                 clearTokens();
+                window.location.href = "/login";
             }
         }
         return Promise.reject(error);

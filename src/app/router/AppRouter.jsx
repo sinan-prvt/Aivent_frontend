@@ -101,7 +101,12 @@ import DecorReports from "../../modules/vendor/pages/decoration/DecorReports.jsx
 import DecorBookings from "../../modules/vendor/pages/decoration/DecorBookings.jsx";
 import ThemeManager from "../../modules/vendor/pages/decoration/ThemeManager.jsx";
 
-// ... [existing imports]
+// Lighting & Effects Pages
+import LightingInventory from "../../modules/vendor/pages/lighting/LightingInventory.jsx";
+import LightingScheduleManager from "../../modules/vendor/pages/lighting/LightingScheduleManager.jsx";
+import LightingBookings from "../../modules/vendor/pages/lighting/LightingBookings.jsx";
+import LightingReports from "../../modules/vendor/pages/lighting/LightingReports.jsx";
+import LightingStaff from "../../modules/vendor/pages/lighting/LightingStaff.jsx";
 
 // ------------------------------------------------------
 // FINAL ROUTES
@@ -221,6 +226,13 @@ export default function AppRouter() {
           <Route path="reports" element={<DecorReports />} />
           <Route path="decor-bookings" element={<DecorBookings />} />
           <Route path="themes" element={<ThemeManager />} />
+
+          {/* Lighting & Effects Specific Routes */}
+          <Route path="equipment" element={<LightingInventory />} />
+          <Route path="schedule" element={<LightingScheduleManager />} />
+          <Route path="lighting-bookings" element={<LightingBookings />} />
+          <Route path="staff" element={<LightingStaff />} />
+          <Route path="lighting-reports" element={<LightingReports />} />
 
           {/* Product Management */}
           <Route path="products" element={<VendorProducts />} />

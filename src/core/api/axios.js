@@ -26,29 +26,53 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ✅ refresh token flow
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+
+// ✅ refresh token flow - FIXED to prevent infinite loop
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
     if (!original) return Promise.reject(error);
 
-    if (error.response?.status === 401 && !original._retry && getRefreshToken()) {
+    // 🚫 NEVER retry the refresh endpoint itself - this prevents infinite loop
+    if (original.url?.includes("/token/refresh")) {
+      clearTokens();
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
+    // Handle 401 errors for other requests
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      getRefreshToken() &&
+      !isRefreshing
+    ) {
       original._retry = true;
+      isRefreshing = true;
+
       try {
-        const resp = await api.post("/api/auth/token/refresh/", {
-          refresh: getRefreshToken(),
-        });
+        const resp = await axios.post(
+          `${API_BASE_URL || "http://localhost:8000/api"}/api/auth/token/refresh/`,
+          { refresh: getRefreshToken() }
+        );
 
         const newAccess = resp.data.access;
         saveAccessToken(newAccess);
+        isRefreshing = false;
 
         original.headers.Authorization = `Bearer ${newAccess}`;
         return api(original);
-      } catch {
+      } catch (refreshError) {
+        isRefreshing = false;
         clearTokens();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );

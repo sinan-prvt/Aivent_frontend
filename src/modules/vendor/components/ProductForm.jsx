@@ -15,6 +15,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
         category: "",
         categoryName: "",
         is_available: true,
+        stock: 1,
         images: [],
     });
     const [previews, setPreviews] = useState([]);
@@ -28,6 +29,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                 category: initialData.category?.id || initialData.category || "",
                 categoryName: "Wedding", // Default to Wedding for UI if editing existing item (since generic maps to single ID)
                 is_available: initialData.is_available ?? true,
+                stock: initialData.stock || 1,
                 images: [],
             });
             if (initialData.images && Array.isArray(initialData.images)) {
@@ -44,6 +46,14 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
         if (name === "category" && vendorCategory === "decoration") {
             // value here is the Name (e.g. "Floral")
             const id = getCategoryIdByName(value) || getCategoryIdByName("Decoration") || "2";
+            setFormData((prev) => ({
+                ...prev,
+                category: id,
+                categoryName: value
+            }));
+        } else if (name === "category" && vendorCategory === "lighting") {
+            // value here is the Name (e.g. "LED & Pixel Lights")
+            const id = getCategoryIdByName(value) || getCategoryIdByName("Lighting") || "3";
             setFormData((prev) => ({
                 ...prev,
                 category: id,
@@ -86,6 +96,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
         data.append("price", formData.price);
         data.append("category", formData.category);
         data.append("is_available", formData.is_available);
+        data.append("stock", formData.stock);
 
         // Append the first image as the main 'image' field for the backend
         if (formData.images.length > 0) {
@@ -114,6 +125,17 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
         "Theme",
         "Mandap",
         "Table"
+    ];
+
+    // Lighting & Effects Categories
+    const lightingCategories = [
+        "Decorative Lighting",
+        "LED & Pixel Lights",
+        "Laser & Special Effects",
+        "Fireworks & Cold Pyro",
+        "PA System & Speakers",
+        "DJ Equipment",
+        "Fog & Haze Machines"
     ];
 
     return (
@@ -156,11 +178,23 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                 </div>
 
                 <div>
+                    <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                    <input
+                        type="number"
+                        name="stock"
+                        required
+                        value={formData.stock}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
+                    />
+                </div>
+
+                <div>
                     <label className="block text-sm font-medium text-gray-700">Category</label>
                     <select
                         name="category"
                         required
-                        value={vendorCategory === "decoration" ? formData.categoryName : formData.category}
+                        value={(vendorCategory === "decoration" || vendorCategory === "lighting") ? formData.categoryName : formData.category}
                         onChange={handleChange}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
                     >
@@ -168,7 +202,15 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                         {vendorCategory === "decoration" ? (
                             // Decoration Specific Options
                             decorCategories.map((name) => {
-                                // We use the NAME as the value to ensure uniqueness in the dropdown
+                                return (
+                                    <option key={name} value={name}>
+                                        {name}
+                                    </option>
+                                );
+                            })
+                        ) : vendorCategory === "lighting" ? (
+                            // Lighting & Effects Specific Options
+                            lightingCategories.map((name) => {
                                 return (
                                     <option key={name} value={name}>
                                         {name}
@@ -216,7 +258,7 @@ const ProductForm = ({ initialData, onSubmit, isSubmitting, vendorCategory }) =>
                         </label>
                     </div>
                     <p className="mt-2 text-xs text-gray-500">
-                        {vendorCategory === "decoration" ? "First image will be used as the main cover." : ""}
+                        {(vendorCategory === "decoration" || vendorCategory === "lighting") ? "First image will be used as the main cover." : ""}
                     </p>
                 </div>
 
