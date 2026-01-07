@@ -108,6 +108,11 @@ import LightingBookings from "../../modules/vendor/pages/lighting/LightingBookin
 import LightingReports from "../../modules/vendor/pages/lighting/LightingReports.jsx";
 import LightingStaff from "../../modules/vendor/pages/lighting/LightingStaff.jsx";
 
+// Photography Pages
+import PhotographyPackages from "../../modules/vendor/pages/photography/PhotographyPackages.jsx";
+import PhotographyDeliveryCenter from "../../modules/vendor/pages/photography/PhotographyDeliveryCenter.jsx";
+import VendorPackagesDispatcher from "../../modules/vendor/pages/VendorPackagesDispatcher.jsx";
+
 // ------------------------------------------------------
 // FINAL ROUTES
 // ------------------------------------------------------
@@ -215,9 +220,11 @@ export default function AppRouter() {
         >
           <Route index element={<VendorDashboardHome />} />
 
+          {/* Packages Dispatcher (Handles all categories) */}
+          <Route path="packages" element={<VendorPackagesDispatcher />} />
+
           {/* Catering Specific Routes */}
           <Route path="menus" element={<MenuBuilder />} />
-          <Route path="packages" element={<CateringPackages />} />
           <Route path="bookings" element={<CateringBookings />} />
 
           {/* Decoration Specific Routes */}
@@ -233,6 +240,9 @@ export default function AppRouter() {
           <Route path="lighting-bookings" element={<LightingBookings />} />
           <Route path="staff" element={<LightingStaff />} />
           <Route path="lighting-reports" element={<LightingReports />} />
+
+          {/* Photography Specific Routes */}
+          <Route path="delivery" element={<PhotographyDeliveryCenter />} />
 
           {/* Product Management */}
           <Route path="products" element={<VendorProducts />} />

@@ -137,7 +137,7 @@ const PlanEvent = () => {
                                             {product.image && (
                                                 <div className="mb-4 rounded-xl overflow-hidden h-48 bg-gray-100">
                                                     <img
-                                                        src={product.image}
+                                                        src={product.image.startsWith('http') ? product.image : `http://localhost:8003${product.image}`}
                                                         alt={product.name}
                                                         className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                                                         onClick={() => navigate(`/products/${product.id}`)}

@@ -24,7 +24,11 @@ import {
   ChevronLeft,
   Briefcase,
   ShieldCheck,
-  Building
+  Building,
+  Camera,
+  Video,
+  Aperture,
+  Wifi
 } from "lucide-react";
 
 export default function VendorApply() {
@@ -42,8 +46,10 @@ export default function VendorApply() {
     gst_number: "",
     contact_person: "",
     business_type: "individual",
-    bank_account_number: "",
-    bank_ifsc: "",
+    bank_name: "",
+    account_number: "",
+    ifsc_code: "",
+    account_holder_name: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -94,10 +100,12 @@ export default function VendorApply() {
           e.gst_number = "Invalid GST";
         break;
       case 2:
-        if (!form.bank_account_number.trim()) e.bank_account_number = "Required";
-        else if (form.bank_account_number.length < 9) e.bank_account_number = "Invalid";
-        if (!form.bank_ifsc.trim()) e.bank_ifsc = "Required";
-        else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.bank_ifsc)) e.bank_ifsc = "Invalid IFSC";
+        if (!form.bank_name?.trim()) e.bank_name = "Required";
+        if (!form.account_number?.trim()) e.account_number = "Required";
+        else if (form.account_number.length < 9) e.account_number = "Invalid";
+        if (!form.ifsc_code?.trim()) e.ifsc_code = "Required";
+        else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifsc_code)) e.ifsc_code = "Invalid IFSC";
+        if (!form.account_holder_name?.trim()) e.account_holder_name = "Required";
         break;
     }
     setErrors(e);
@@ -133,8 +141,10 @@ export default function VendorApply() {
         email: form.email,
         password: form.password,
         business_type: form.business_type,
-        bank_account_number: form.bank_account_number,
-        bank_ifsc: form.bank_ifsc,
+        bank_name: form.bank_name,
+        account_number: form.account_number,
+        ifsc_code: form.ifsc_code,
+        account_holder_name: form.account_holder_name,
       };
 
       const res = await applyVendor(payload);
@@ -145,8 +155,28 @@ export default function VendorApply() {
       sessionStorage.setItem("vendor_email", form.email);
       navigate("/vendor/verify-otp");
     } catch (err) {
+      console.error("Registration failed:", err.response?.data);
+      const backendError = err?.response?.data;
+      let errorMessage = "Registration failed. Please try again.";
+
+      if (backendError) {
+        if (typeof backendError === 'string') {
+          errorMessage = backendError;
+        } else if (backendError.detail) {
+          errorMessage = backendError.detail;
+        } else if (backendError.message) {
+          errorMessage = backendError.message;
+        } else {
+          // Join all array errors into a single string
+          const fieldErrors = Object.entries(backendError)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join(' | ');
+          if (fieldErrors) errorMessage = fieldErrors;
+        }
+      }
+
       setErrors({
-        general: err?.response?.data?.message || "Registration failed. Please try again.",
+        general: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -173,502 +203,544 @@ export default function VendorApply() {
 
   const handleBankAccountChange = useCallback((e) => {
     const value = e.target.value.replace(/\D/g, '');
-    setForm(prev => ({ ...prev, bank_account_number: value }));
-    if (errors.bank_account_number) setErrors(prev => ({ ...prev, bank_account_number: '' }));
+    setForm(prev => ({ ...prev, account_number: value }));
+    if (errors.account_number) setErrors(prev => ({ ...prev, account_number: '' }));
   }, [errors]);
 
   const handleIfscChange = useCallback((e) => {
     const value = e.target.value.toUpperCase();
-    setForm(prev => ({ ...prev, bank_ifsc: value }));
-    if (errors.bank_ifsc) setErrors(prev => ({ ...prev, bank_ifsc: '' }));
+    setForm(prev => ({ ...prev, ifsc_code: value }));
+    if (errors.ifsc_code) setErrors(prev => ({ ...prev, ifsc_code: '' }));
   }, [errors]);
 
   // Memoize Section1
-// Replace the useMemo sections with these regular functions
+  // Replace the useMemo sections with these regular functions
 
-const Section1 = () => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {/* Business Name */}
-      <div className="md:col-span-2">
-        <div className="flex items-center gap-2 mb-2">
-          <Building className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Business Name
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <input
-          name="business_name"
-          placeholder="e.g., ABC Enterprises"
-          className={`w-full px-4 py-3 border ${errors.business_name ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
-          value={form.business_name}
-          onChange={handleInputChange('business_name')}
-        />
-        {errors.business_name && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.business_name}
+  const Section1 = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Business Name */}
+        <div className="md:col-span-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Building className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Business Name
+            </label>
+            <span className="text-red-500 text-sm">*</span>
           </div>
-        )}
-      </div>
-
-      {/* Contact Person */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <User className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Contact Person
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <input
-          name="contact_person"
-          placeholder="Full name"
-          className={`w-full px-4 py-3 border ${errors.contact_person ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
-          value={form.contact_person}
-          onChange={handleInputChange('contact_person')}
-        />
-        {errors.contact_person && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.contact_person}
-          </div>
-        )}
-      </div>
-
-      {/* Category */}
-      <div className="relative">
-        <div className="flex items-center gap-2 mb-2">
-          <Store className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Business Category
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-            className={`w-full px-4 py-3 border ${errors.category_id ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white flex items-center justify-between text-left transition-all duration-200`}
-          >
-            <span className={`${selectedCategory ? 'text-gray-900' : 'text-gray-500'}`}>
-              {selectedCategory?.name || "Select a category"}
-            </span>
-            <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
-          </button>
-          
-          {isCategoryOpen && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-              {parentCategories.map((c) => (
-                <button
-                  type="button"
-                  key={c.id}
-                  onClick={() => {
-                    setForm(prev => ({
-                      ...prev,
-                      category_id: c.id,
-                      subcategory_ids: []
-                    }));
-                    setIsCategoryOpen(false);
-                    if (errors.category_id) setErrors(prev => ({ ...prev, category_id: '' }));
-                  }}
-                  className="w-full px-4 py-3 text-left hover:bg-blue-50 flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Store className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-800 font-medium">{c.name}</span>
-                  </div>
-                  {form.category_id === c.id && (
-                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </button>
-              ))}
+          <input
+            name="business_name"
+            placeholder="e.g., ABC Enterprises"
+            className={`w-full px-4 py-3 border ${errors.business_name ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+            value={form.business_name}
+            onChange={handleInputChange('business_name')}
+          />
+          {errors.business_name && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.business_name}
             </div>
           )}
         </div>
-        {errors.category_id && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.category_id}
-          </div>
-        )}
-      </div>
 
-      {/* Subcategories */}
-      {subCategories.length > 0 && (
-        <div className="md:col-span-2">
-          <label className="block text-sm font-semibold text-gray-800 mb-3">
-            Specializations (Optional)
-          </label>
-          <div className="flex flex-wrap gap-2.5">
-            {subCategories.map((sc) => (
-              <label
-                key={sc.id}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border cursor-pointer transition-all ${form.subcategory_ids.includes(sc.id) ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={form.subcategory_ids.includes(sc.id)}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      subcategory_ids: e.target.checked
-                        ? [...prev.subcategory_ids, sc.id]
-                        : prev.subcategory_ids.filter((id) => id !== sc.id),
-                    }))
-                  }
-                  className="hidden"
-                />
-                <div className={`w-4 h-4 border rounded flex items-center justify-center ${form.subcategory_ids.includes(sc.id) ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
-                  {form.subcategory_ids.includes(sc.id) && (
-                    <Check className="h-3 w-3 text-white" />
-                  )}
-                </div>
-                <span className="text-sm font-medium">{sc.name}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Phone */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Phone className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Phone Number
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <span className="text-gray-700 font-medium text-sm">+91</span>
-          </div>
-          <input
-            name="phone"
-            placeholder="Enter 10-digit number"
-            className={`w-full pl-14 pr-4 py-3 border ${errors.phone ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
-            value={form.phone}
-            onChange={handlePhoneChange}
-          />
-        </div>
-        {errors.phone && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.phone}
-          </div>
-        )}
-      </div>
-
-      {/* Email */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Mail className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Business Email
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <input
-          name="email"
-          type="email"
-          placeholder="business@example.com"
-          className={`w-full px-4 py-3 border ${errors.email ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
-          value={form.email}
-          onChange={handleInputChange('email')}
-        />
-        {errors.email && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.email}
-          </div>
-        )}
-      </div>
-
-      {/* Password */}
-      <div className="md:col-span-2">
-        <div className="flex items-center gap-2 mb-2">
-          <Lock className="h-4 w-4 text-blue-600" />
-          <label className="block text-sm font-semibold text-gray-800">
-            Password
-          </label>
-          <span className="text-red-500 text-sm">*</span>
-        </div>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Minimum 8 characters"
-            className={`w-full px-4 py-3 border ${errors.password ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 pr-12`}
-            value={form.password}
-            onChange={handleInputChange('password')}
-          />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
-          </button>
-        </div>
-        {errors.password && (
-          <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-            <AlertCircle size={14} />
-            {errors.password}
-          </div>
-        )}
-        {form.password && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-700">Password Strength</span>
-              <span className="text-xs font-semibold text-gray-900">
-                {form.password.length < 4 ? "Weak" : 
-                 form.password.length < 8 ? "Fair" : 
-                 /[A-Z]/.test(form.password) && /[0-9]/.test(form.password) ? "Strong" : "Good"}
-              </span>
-            </div>
-            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-300 ${
-                  form.password.length < 4 ? 'bg-red-500' : 
-                  form.password.length < 8 ? 'bg-yellow-500' : 
-                  /[A-Z]/.test(form.password) && /[0-9]/.test(form.password) ? 'bg-green-500' : 'bg-blue-500'
-                }`}
-                style={{ 
-                  width: `${Math.min(
-                    form.password.length < 4 ? form.password.length * 25 : 
-                    form.password.length < 8 ? 25 + (form.password.length - 3) * 12.5 :
-                    75 + (form.password.length - 7) * 3.125, 100
-                  )}%` 
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-const Section2 = () => (
-  <div className="space-y-6">
-    {/* Business Type */}
-    <div>
-      <label className="block text-sm font-semibold text-gray-800 mb-3">
-        Business Structure
-      </label>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {[
-          { value: "individual", label: "Individual", icon: User, description: "Sole Proprietor" },
-          { value: "partnership", label: "Partnership", icon: Users, description: "Multiple Owners" },
-          { value: "private_limited", label: "Private Ltd.", icon: Building2, description: "Registered Company" }
-        ].map((type) => (
-          <label
-            key={type.value}
-            className={`relative border rounded-xl p-4 cursor-pointer transition-all duration-200 ${form.business_type === type.value ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'}`}
-          >
-            <input
-              type="radio"
-              name="business_type"
-              value={type.value}
-              checked={form.business_type === type.value}
-              onChange={(e) => setForm(prev => ({ ...prev, business_type: e.target.value }))}
-              className="sr-only"
-            />
-            <div className="text-center">
-              <div className="mb-2">
-                <type.icon className="h-8 w-8 mx-auto text-blue-600" />
-              </div>
-              <span className="block text-sm font-semibold text-gray-900 mb-1">
-                {type.label}
-              </span>
-              <span className="text-xs text-gray-600">
-                {type.description}
-              </span>
-            </div>
-            {form.business_type === type.value && (
-              <div className="absolute top-3 right-3">
-                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                  <Check className="h-3 w-3 text-white" />
-                </div>
-              </div>
-            )}
-          </label>
-        ))}
-      </div>
-    </div>
-
-    {/* Address */}
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <MapPin className="h-4 w-4 text-blue-600" />
-        <label className="block text-sm font-semibold text-gray-800">
-          Business Address
-        </label>
-        <span className="text-red-500 text-sm">*</span>
-      </div>
-      <textarea
-        name="address"
-        placeholder="Complete business address with PIN code"
-        rows="3"
-        className={`w-full px-4 py-3 border ${errors.address ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 resize-none`}
-        value={form.address}
-        onChange={handleInputChange('address')}
-      />
-      {errors.address && (
-        <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-          <AlertCircle size={14} />
-          {errors.address}
-        </div>
-      )}
-    </div>
-
-    {/* GST */}
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <FileText className="h-4 w-4 text-blue-600" />
-        <label className="block text-sm font-semibold text-gray-800">
-          GST Number
-        </label>
-        <span className="text-red-500 text-sm">*</span>
-      </div>
-      <div className="relative">
-        <input
-          name="gst_number"
-          placeholder="22AAAAA0000A1Z5"
-          className={`w-full px-4 py-3 border ${errors.gst_number ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 uppercase font-mono tracking-wider`}
-          value={form.gst_number}
-          onChange={handleGstChange}
-        />
-      </div>
-      {errors.gst_number && (
-        <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
-          <AlertCircle size={14} />
-          {errors.gst_number}
-        </div>
-      )}
-    </div>
-  </div>
-);
-
-const Section3 = () => (
-  <div className="space-y-6">
-    {/* Security Notice */}
-    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-      <div className="flex items-start gap-3">
-        <ShieldCheck className="h-5 w-5 text-blue-600 mt-0.5" />
+        {/* Contact Person */}
         <div>
-          <p className="text-sm font-semibold text-gray-900 mb-1">Secure Banking Information</p>
-          <p className="text-xs text-gray-600">Your financial details are encrypted with bank-level security</p>
+          <div className="flex items-center gap-2 mb-2">
+            <User className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Contact Person
+            </label>
+            <span className="text-red-500 text-sm">*</span>
+          </div>
+          <input
+            name="contact_person"
+            placeholder="Full name"
+            className={`w-full px-4 py-3 border ${errors.contact_person ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+            value={form.contact_person}
+            onChange={(e) => {
+              const val = e.target.value;
+              setForm(prev => ({
+                ...prev,
+                contact_person: val,
+                account_holder_name: prev.account_holder_name || val
+              }));
+              if (errors.contact_person) setErrors(prev => ({ ...prev, contact_person: '' }));
+            }}
+          />
+          {errors.contact_person && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.contact_person}
+            </div>
+          )}
+        </div>
+
+        {/* Category */}
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Store className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Business Category
+            </label>
+            <span className="text-red-500 text-sm">*</span>
+          </div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+              className={`w-full px-4 py-3 border ${errors.category_id ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white flex items-center justify-between text-left transition-all duration-200`}
+            >
+              <span className={`${selectedCategory ? 'text-gray-900' : 'text-gray-500'}`}>
+                {selectedCategory?.name || "Select a category"}
+              </span>
+              <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isCategoryOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                {parentCategories.map((c) => (
+                  <button
+                    type="button"
+                    key={c.id}
+                    onClick={() => {
+                      setForm(prev => ({
+                        ...prev,
+                        category_id: c.id,
+                        subcategory_ids: []
+                      }));
+                      setIsCategoryOpen(false);
+                      if (errors.category_id) setErrors(prev => ({ ...prev, category_id: '' }));
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-blue-50 flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Store className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-800 font-medium">{c.name}</span>
+                    </div>
+                    {form.category_id === c.id && (
+                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {errors.category_id && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.category_id}
+            </div>
+          )}
+        </div>
+
+        {/* Subcategories */}
+        {subCategories.length > 0 && (
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              Specializations (Optional)
+            </label>
+            <div className="flex flex-wrap gap-2.5">
+              {subCategories.map((sc) => (
+                <label
+                  key={sc.id}
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border cursor-pointer transition-all ${form.subcategory_ids.includes(sc.id) ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.subcategory_ids.includes(sc.id)}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        subcategory_ids: e.target.checked
+                          ? [...prev.subcategory_ids, sc.id]
+                          : prev.subcategory_ids.filter((id) => id !== sc.id),
+                      }))
+                    }
+                    className="hidden"
+                  />
+                  <div className={`w-4 h-4 border rounded flex items-center justify-center ${form.subcategory_ids.includes(sc.id) ? 'border-blue-600 bg-blue-600' : 'border-gray-400'}`}>
+                    {form.subcategory_ids.includes(sc.id) && (
+                      <Check className="h-3 w-3 text-white" />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium">{sc.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Phone */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Phone className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Phone Number
+            </label>
+            <span className="text-red-500 text-sm">*</span>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-gray-700 font-medium text-sm">+91</span>
+            </div>
+            <input
+              name="phone"
+              placeholder="Enter 10-digit number"
+              className={`w-full pl-14 pr-4 py-3 border ${errors.phone ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+              value={form.phone}
+              onChange={handlePhoneChange}
+            />
+          </div>
+          {errors.phone && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.phone}
+            </div>
+          )}
+        </div>
+
+        {/* Email */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Mail className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Business Email
+            </label>
+            <span className="text-red-500 text-sm">*</span>
+          </div>
+          <input
+            name="email"
+            type="email"
+            placeholder="business@example.com"
+            className={`w-full px-4 py-3 border ${errors.email ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+            value={form.email}
+            onChange={handleInputChange('email')}
+          />
+          {errors.email && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.email}
+            </div>
+          )}
+        </div>
+
+        {/* Password */}
+        <div className="md:col-span-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Lock className="h-4 w-4 text-blue-600" />
+            <label className="block text-sm font-semibold text-gray-800">
+              Password
+            </label>
+            <span className="text-red-500 text-sm">*</span>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Minimum 8 characters"
+              className={`w-full px-4 py-3 border ${errors.password ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 pr-12`}
+              value={form.password}
+              onChange={handleInputChange('password')}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+          {errors.password && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.password}
+            </div>
+          )}
+          {form.password && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-gray-700">Password Strength</span>
+                <span className="text-xs font-semibold text-gray-900">
+                  {form.password.length < 4 ? "Weak" :
+                    form.password.length < 8 ? "Fair" :
+                      /[A-Z]/.test(form.password) && /[0-9]/.test(form.password) ? "Strong" : "Good"}
+                </span>
+              </div>
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${form.password.length < 4 ? 'bg-red-500' :
+                    form.password.length < 8 ? 'bg-yellow-500' :
+                      /[A-Z]/.test(form.password) && /[0-9]/.test(form.password) ? 'bg-green-500' : 'bg-blue-500'
+                    }`}
+                  style={{
+                    width: `${Math.min(
+                      form.password.length < 4 ? form.password.length * 25 :
+                        form.password.length < 8 ? 25 + (form.password.length - 3) * 12.5 :
+                          75 + (form.password.length - 7) * 3.125, 100
+                    )}%`
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
+  );
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {/* Bank Account */}
+  const Section2 = () => (
+    <div className="space-y-6">
+      {/* Business Type */}
       <div>
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
-          Bank Account Number
-          <span className="text-red-500 text-sm ml-1">*</span>
+        <label className="block text-sm font-semibold text-gray-800 mb-3">
+          Business Structure
         </label>
-        <input
-          name="bank_account_number"
-          placeholder="e.g., 123456789012"
-          className={`w-full px-4 py-3 border ${errors.bank_account_number ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 font-mono`}
-          value={form.bank_account_number}
-          onChange={handleBankAccountChange}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { value: "individual", label: "Individual", icon: User, description: "Sole Proprietor" },
+            { value: "partnership", label: "Partnership", icon: Users, description: "Multiple Owners" },
+            { value: "private_limited", label: "Private Ltd.", icon: Building2, description: "Registered Company" }
+          ].map((type) => (
+            <label
+              key={type.value}
+              className={`relative border rounded-xl p-4 cursor-pointer transition-all duration-200 ${form.business_type === type.value ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'}`}
+            >
+              <input
+                type="radio"
+                name="business_type"
+                value={type.value}
+                checked={form.business_type === type.value}
+                onChange={(e) => setForm(prev => ({ ...prev, business_type: e.target.value }))}
+                className="sr-only"
+              />
+              <div className="text-center">
+                <div className="mb-2">
+                  <type.icon className="h-8 w-8 mx-auto text-blue-600" />
+                </div>
+                <span className="block text-sm font-semibold text-gray-900 mb-1">
+                  {type.label}
+                </span>
+                <span className="text-xs text-gray-600">
+                  {type.description}
+                </span>
+              </div>
+              {form.business_type === type.value && (
+                <div className="absolute top-3 right-3">
+                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                </div>
+              )}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Address */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <MapPin className="h-4 w-4 text-blue-600" />
+          <label className="block text-sm font-semibold text-gray-800">
+            Business Address
+          </label>
+          <span className="text-red-500 text-sm">*</span>
+        </div>
+        <textarea
+          name="address"
+          placeholder="Complete business address with PIN code"
+          rows="3"
+          className={`w-full px-4 py-3 border ${errors.address ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 resize-none`}
+          value={form.address}
+          onChange={handleInputChange('address')}
         />
-        {errors.bank_account_number && (
+        {errors.address && (
           <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
             <AlertCircle size={14} />
-            {errors.bank_account_number}
+            {errors.address}
           </div>
         )}
       </div>
 
-      {/* IFSC Code */}
+      {/* GST */}
       <div>
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
-          IFSC Code
-          <span className="text-red-500 text-sm ml-1">*</span>
-        </label>
-        <input
-          name="bank_ifsc"
-          placeholder="e.g., SBIN0001234"
-          className={`w-full px-4 py-3 border ${errors.bank_ifsc ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 uppercase font-mono`}
-          value={form.bank_ifsc}
-          onChange={handleIfscChange}
-        />
-        {errors.bank_ifsc && (
+        <div className="flex items-center gap-2 mb-2">
+          <FileText className="h-4 w-4 text-blue-600" />
+          <label className="block text-sm font-semibold text-gray-800">
+            GST Number
+          </label>
+          <span className="text-red-500 text-sm">*</span>
+        </div>
+        <div className="relative">
+          <input
+            name="gst_number"
+            placeholder="22AAAAA0000A1Z5"
+            className={`w-full px-4 py-3 border ${errors.gst_number ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 uppercase font-mono tracking-wider`}
+            value={form.gst_number}
+            onChange={handleGstChange}
+          />
+        </div>
+        {errors.gst_number && (
           <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
             <AlertCircle size={14} />
-            {errors.bank_ifsc}
+            {errors.gst_number}
           </div>
         )}
       </div>
+    </div>
+  );
 
-      {/* Account Holder */}
-      <div className="md:col-span-2">
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
-          Account Holder Verification
-        </label>
-        <div className="p-4 border border-gray-300 rounded-xl bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-600" />
+  const Section3 = () => (
+    <div className="space-y-6">
+      {/* Security Notice */}
+      <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+        <div className="flex items-start gap-3">
+          <ShieldCheck className="h-5 w-5 text-blue-600 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-gray-900 mb-1">Secure Banking Information</p>
+            <p className="text-xs text-gray-600">Your financial details are encrypted with bank-level security</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Bank Name */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Bank Name
+            <span className="text-red-500 text-sm ml-1">*</span>
+          </label>
+          <input
+            name="bank_name"
+            placeholder="e.g., State Bank of India"
+            className={`w-full px-4 py-3 border ${errors.bank_name ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+            value={form.bank_name}
+            onChange={handleInputChange('bank_name')}
+          />
+          {errors.bank_name && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.bank_name}
+            </div>
+          )}
+        </div>
+
+        {/* Bank Account */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Bank Account Number
+            <span className="text-red-500 text-sm ml-1">*</span>
+          </label>
+          <input
+            name="account_number"
+            placeholder="e.g., 123456789012"
+            className={`w-full px-4 py-3 border ${errors.account_number ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 font-mono`}
+            value={form.account_number}
+            onChange={handleBankAccountChange}
+          />
+          {errors.account_number && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.account_number}
+            </div>
+          )}
+        </div>
+
+        {/* IFSC Code */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            IFSC Code
+            <span className="text-red-500 text-sm ml-1">*</span>
+          </label>
+          <input
+            name="ifsc_code"
+            placeholder="e.g., SBIN0001234"
+            className={`w-full px-4 py-3 border ${errors.ifsc_code ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 uppercase font-mono`}
+            value={form.ifsc_code}
+            onChange={handleIfscChange}
+          />
+          {errors.ifsc_code && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.ifsc_code}
+            </div>
+          )}
+        </div>
+
+        {/* Account Holder */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Account Holder Name
+            <span className="text-red-500 text-sm ml-1">*</span>
+          </label>
+          <input
+            name="account_holder_name"
+            placeholder="Full name as per bank records"
+            className={`w-full px-4 py-3 border ${errors.account_holder_name ? 'border-red-400 ring-1 ring-red-200' : 'border-gray-300 hover:border-blue-400'} rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200`}
+            value={form.account_holder_name}
+            onChange={handleInputChange('account_holder_name')}
+          />
+          {errors.account_holder_name && (
+            <div className="mt-2 flex items-center gap-1.5 text-red-600 text-sm">
+              <AlertCircle size={14} />
+              {errors.account_holder_name}
+            </div>
+          )}
+          <div className="mt-4 p-4 border border-gray-300 rounded-xl bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{form.account_holder_name || "Not specified"}</p>
+                  <p className="text-xs text-gray-500">Verified account holder</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{form.contact_person || "Not specified"}</p>
-                <p className="text-xs text-gray-500">Primary account holder</p>
+              <div className="flex items-center gap-1.5 text-green-600">
+                <Check className="h-4 w-4" />
+                <span className="text-xs font-medium">Verified</span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-green-600">
-              <Check className="h-4 w-4" />
-              <span className="text-xs font-medium">Verified</span>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-xs text-gray-500">
+                Note: Account holder name should match your bank records. Updates to business name won't affect this field.
+              </p>
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
-              Note: Account holder name should match your bank records. Updates to business name won't affect this field.
+        </div>
+      </div>
+
+      {/* Terms & Conditions */}
+      <div className="pt-6 border-t border-gray-200">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <div className="flex items-center justify-center w-5 h-5 mt-0.5">
+            <input
+              type="checkbox"
+              required
+              className="w-5 h-5 text-blue-600 border-gray-400 rounded focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
+            />
+          </div>
+          <div className="text-sm">
+            <p className="text-gray-900 font-medium mb-1">
+              Terms & Conditions Agreement
+            </p>
+            <p className="text-gray-600">
+              I confirm that all information provided is accurate and I agree to the{" "}
+              <a href="#" className="text-blue-600 hover:text-blue-800 font-medium underline">Terms of Service</a>
+              {" "}and{" "}
+              <a href="#" className="text-blue-600 hover:text-blue-800 font-medium underline">Privacy Policy</a>.
+              I understand that providing false information may result in account suspension.
             </p>
           </div>
-        </div>
+        </label>
       </div>
     </div>
-
-    {/* Terms & Conditions */}
-    <div className="pt-6 border-t border-gray-200">
-      <label className="flex items-start gap-3 cursor-pointer group">
-        <div className="flex items-center justify-center w-5 h-5 mt-0.5">
-          <input
-            type="checkbox"
-            required
-            className="w-5 h-5 text-blue-600 border-gray-400 rounded focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
-          />
-        </div>
-        <div className="text-sm">
-          <p className="text-gray-900 font-medium mb-1">
-            Terms & Conditions Agreement
-          </p>
-          <p className="text-gray-600">
-            I confirm that all information provided is accurate and I agree to the{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-800 font-medium underline">Terms of Service</a>
-            {" "}and{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-800 font-medium underline">Privacy Policy</a>.
-            I understand that providing false information may result in account suspension.
-          </p>
-        </div>
-      </label>
-    </div>
-  </div>
-);
+  );
 
   const renderSection = useCallback(() => {
     switch (activeSection) {
@@ -706,7 +778,7 @@ const Section3 = () => (
         <div className="mb-8">
           <div className="flex items-center justify-between relative">
             <div className="absolute left-0 right-0 top-4 h-0.5 bg-gray-300 -z-10">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
                 style={{ width: `${(activeSection / (sections.length - 1)) * 100}%` }}
               />
@@ -715,17 +787,16 @@ const Section3 = () => (
               const Icon = section.icon;
               const isActive = activeSection === index;
               const isCompleted = index < activeSection;
-              
+
               return (
                 <div key={section.id} className="flex flex-col items-center">
                   <button
                     type="button"
                     onClick={() => index <= activeSection && setActiveSection(index)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 transition-all duration-300 transform hover:scale-110 ${
-                      isCompleted ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg' : 
-                      isActive ? 'bg-gradient-to-br from-blue-600 to-indigo-600 shadow-xl ring-2 ring-blue-200 ring-offset-2' : 
-                      'bg-gray-300'
-                    }`}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 transition-all duration-300 transform hover:scale-110 ${isCompleted ? 'bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg' :
+                      isActive ? 'bg-gradient-to-br from-blue-600 to-indigo-600 shadow-xl ring-2 ring-blue-200 ring-offset-2' :
+                        'bg-gray-300'
+                      }`}
                   >
                     {isCompleted ? (
                       <Check className="h-4 w-4 text-white" />
@@ -734,11 +805,10 @@ const Section3 = () => (
                     )}
                   </button>
                   <div className="text-center">
-                    <span className={`block text-xs font-semibold ${
-                      isActive ? 'text-blue-600' : 
-                      isCompleted ? 'text-green-600' : 
-                      'text-gray-500'
-                    }`}>
+                    <span className={`block text-xs font-semibold ${isActive ? 'text-blue-600' :
+                      isCompleted ? 'text-green-600' :
+                        'text-gray-500'
+                      }`}>
                       {section.title}
                     </span>
                     <span className="text-xs text-gray-400 mt-0.5 hidden md:block">

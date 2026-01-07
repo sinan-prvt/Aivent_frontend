@@ -48,12 +48,12 @@ export default function VendorLayout() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 fixed h-full hidden md:flex flex-col">
-        <div className="p-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Aivent" className="w-8 h-8 object-contain" />
+        <div className="p-4">
+          <Link to="/" className="flex items-center gap-1">
+            <img src="/logo.png" alt="Aivent" className="w-15 h-15" />
             <span className="text-xl font-bold text-gray-900 tracking-tight">Aivent</span>
           </Link>
-          <div className="mt-2 px-1">
+          <div className=" px-1">
             <span className="text-xs uppercase font-bold text-gray-400 tracking-wider">
               {config.slug.replace('-', ' ')} Portal
             </span>
@@ -149,6 +149,34 @@ export default function VendorLayout() {
                 icon={FiUser}
                 label="Staff"
                 active={pathname.includes("/staff")}
+              />
+            </>
+          ) : catId === "4" ? (
+            <>
+              {/* PHOTOGRAPHY SPECIFIC NAVIGATION */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label="Studio"
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/packages`}
+                icon={FiBox}
+                label="Packages"
+                active={pathname.includes("/packages")}
+              />
+              <SidebarItem
+                to={`${basePath}/delivery`}
+                icon={FiBox}
+                label="Delivery Center"
+                active={pathname.includes("/delivery")}
+              />
+              <SidebarItem
+                to={`${basePath}/schedule`}
+                icon={FiCalendar}
+                label="Schedule"
+                active={pathname.includes("/schedule")}
               />
             </>
           ) : (
