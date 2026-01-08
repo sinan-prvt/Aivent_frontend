@@ -11,6 +11,7 @@ import Login from "../../modules/auth/pages/Login";
 import Register from "../../modules/auth/pages/Register";
 import Profile from "@/modules/user/pages/Profile";
 import PlanEvent from "../../modules/user/pages/PlanEvent";
+import MagicPlanner from "../../modules/user/pages/MagicPlanner";
 
 /* Auth utilities */
 import ForgotPassword from "../../modules/auth/pages/ForgotPassword";
@@ -140,25 +141,26 @@ export default function AppRouter() {
           }
         />
         <Route path="/register" element={<Register />} />
-      </Route>
+        <Route path="/magic-planner" element={<MagicPlanner />} />
 
-      {/* User profile */}
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/dashboard/plan"
-        element={
-          <PrivateRoute>
-            <PlanEvent />
-          </PrivateRoute>
-        }
-      />
+        {/* User profile */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard/plan"
+          element={
+            <PrivateRoute>
+              <PlanEvent />
+            </PrivateRoute>
+          }
+        />
+      </Route>
 
       {/* Auth helpers */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
