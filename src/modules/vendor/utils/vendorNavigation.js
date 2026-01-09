@@ -32,6 +32,6 @@ export function getVendorPath(user) {
         return `/vendor/${slug}/dashboard`;
     }
 
-    // Fallback to generic dashboard if category not known yet or invalid
-    return "/vendor/dashboard";
+    // Fallback if category is missing - go to profile to setup
+    return "/profile";
 }

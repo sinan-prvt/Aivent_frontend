@@ -22,6 +22,8 @@ import {
 import { fetchDeliveries, createDelivery, updateDelivery, deleteDelivery, uploadPackageImage } from "../../api/photography.api";
 import { useAuth } from "@/app/providers/AuthProvider";
 
+const MEDIA_BASE_URL = "http://localhost:8003";
+
 export default function PhotographyDeliveryCenter() {
   const { user } = useAuth();
   const [deliveries, setDeliveries] = useState([]);
@@ -63,18 +65,24 @@ export default function PhotographyDeliveryCenter() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      let currentFormData = { ...formData };
+      const data = new FormData();
+      data.append("client_name", formData.client_name);
+      data.append("event_type", formData.event_type);
 
-      // Handle image upload if there's a new file
+      if (formData.delivery_date) {
+        data.append("delivery_date", formData.delivery_date);
+      }
+
+      data.append("status", formData.status);
+
       if (imageFile) {
-        const uploadRes = await uploadPackageImage(imageFile);
-        currentFormData.thumbnail = uploadRes.data.url;
+        data.append("thumbnail", imageFile);
       }
 
       if (formData.id) {
-        await updateDelivery(formData.id, currentFormData);
+        await updateDelivery(formData.id, data);
       } else {
-        await createDelivery(currentFormData);
+        await createDelivery(data);
       }
 
       handleCloseModal();
@@ -199,7 +207,7 @@ export default function PhotographyDeliveryCenter() {
                     {/* Thumbnail */}
                     {item.thumbnail ? (
                       <img
-                        src={item.thumbnail}
+                        src={item.thumbnail.startsWith("http") ? item.thumbnail : `${MEDIA_BASE_URL}${item.thumbnail}`}
                         alt={item.client_name}
                         className="w-24 h-32 object-cover rounded-lg bg-gray-100 shadow-sm"
                       />
@@ -373,7 +381,11 @@ export default function PhotographyDeliveryCenter() {
           <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="relative h-64 bg-gray-100">
               {selectedDelivery.thumbnail ? (
-                <img src={selectedDelivery.thumbnail} className="w-full h-full object-cover" alt={selectedDelivery.client_name} />
+                <img
+                  src={selectedDelivery.thumbnail.startsWith("http") ? selectedDelivery.thumbnail : `${MEDIA_BASE_URL}${selectedDelivery.thumbnail}`}
+                  className="w-full h-full object-cover"
+                  alt={selectedDelivery.client_name}
+                />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
                   <FileImage size={64} className="mb-2 opacity-20" />

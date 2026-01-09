@@ -9,6 +9,7 @@ import Settings from "./Settings";
 
 import AdminProductList from "./AdminProductList";
 import AdminProductReview from "./AdminProductReview";
+import NotificationsPage from "../../vendor/pages/NotificationsPage";
 
 export default function AdminDashboard() {
   return (
@@ -18,6 +19,7 @@ export default function AdminDashboard() {
         <Route path="/users" element={<UsersManagement />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
 
         {/* Catalog Management */}
         <Route path="/products" element={<AdminProductList />} />

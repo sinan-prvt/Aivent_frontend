@@ -21,6 +21,8 @@ const VendorEditProduct = () => {
                         navigate("/vendor/decoration/dashboard/inventory");
                     } else if (vendorCategory === 'catering') {
                         navigate("/vendor/catering/dashboard/menus");
+                    } else if (vendorCategory === 'sound') {
+                        navigate("/vendor/sound/dashboard/equipment");
                     } else {
                         navigate("/vendor/products");
                     }

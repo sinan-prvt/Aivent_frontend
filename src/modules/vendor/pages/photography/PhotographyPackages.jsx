@@ -88,7 +88,7 @@ export default function PhotographyPackages() {
         description: "",
         price: "",
         features: "", // Comma joined string for input
-        category_id: user?.category_id || 4, // Default to photography if not set
+        category_id: user?.category_id || 3, // Default to photography (ID 3) if not set
         stock: 1
     });
     const [imageFile, setImageFile] = useState(null);
@@ -112,7 +112,7 @@ export default function PhotographyPackages() {
 
     const handleOpenCreate = () => {
         setIsEditMode(false);
-        setFormData({ name: "", description: "", price: "", features: "", category_id: user?.category_id || 4, stock: 1 });
+        setFormData({ name: "", description: "", price: "", features: "", category_id: user?.category_id || 3, stock: 1 });
         setImageFile(null);
         setIsFormOpen(true);
     };
@@ -142,6 +142,7 @@ export default function PhotographyPackages() {
             productFormData.append('description', formData.description);
             productFormData.append('price', formData.price);
             productFormData.append('category', formData.category_id);
+            productFormData.append('stock', formData.stock || 1);
             // Features as JSON string
             const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f);
             productFormData.append('features', JSON.stringify(featuresArray));

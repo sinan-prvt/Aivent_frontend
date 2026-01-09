@@ -12,6 +12,10 @@ import Register from "../../modules/auth/pages/Register";
 import Profile from "@/modules/user/pages/Profile";
 import PlanEvent from "../../modules/user/pages/PlanEvent";
 import MagicPlanner from "../../modules/user/pages/MagicPlanner";
+import About from "../../modules/user/pages/About";
+import Offers from "../../modules/user/pages/Offers";
+import Inspiration from "../../modules/user/pages/Inspiration";
+import EventsBrowse from "../../modules/user/pages/EventsBrowse";
 
 /* Auth utilities */
 import ForgotPassword from "../../modules/auth/pages/ForgotPassword";
@@ -109,10 +113,18 @@ import LightingBookings from "../../modules/vendor/pages/lighting/LightingBookin
 import LightingReports from "../../modules/vendor/pages/lighting/LightingReports.jsx";
 import LightingStaff from "../../modules/vendor/pages/lighting/LightingStaff.jsx";
 
+// Sound & Music Pages
+import SoundServices from "../../modules/vendor/pages/sound/SoundServices.jsx";
+import SoundSchedule from "../../modules/vendor/pages/sound/SoundSchedule.jsx";
+
 // Photography Pages
 import PhotographyPackages from "../../modules/vendor/pages/photography/PhotographyPackages.jsx";
 import PhotographyDeliveryCenter from "../../modules/vendor/pages/photography/PhotographyDeliveryCenter.jsx";
+import PhotographySchedule from "../../modules/vendor/pages/photography/PhotographySchedule.jsx";
 import VendorPackagesDispatcher from "../../modules/vendor/pages/VendorPackagesDispatcher.jsx";
+import NotificationsPage from "../../modules/vendor/pages/NotificationsPage";
+import { VendorScheduleDispatcher, VendorEquipmentDispatcher } from "../../modules/vendor/pages/VendorDispatchers.jsx";
+
 
 // ------------------------------------------------------
 // FINAL ROUTES
@@ -130,6 +142,10 @@ export default function AppRouter() {
           ? <Navigate to={getVendorPath(user)} replace />
           : <Home />}
         />
+        <Route path="/about" element={<About />} />
+        <Route path="/events" element={<EventsBrowse />} />
+        <Route path="/offers" element={<Offers />} />
+        <Route path="/inspiration" element={<Inspiration />} />
         <Route path="/categories/:slug" element={<CategoryProducts />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route
@@ -225,6 +241,13 @@ export default function AppRouter() {
           {/* Packages Dispatcher (Handles all categories) */}
           <Route path="packages" element={<VendorPackagesDispatcher />} />
 
+          {/* Unified Route Dispatchers */}
+          <Route path="equipment" element={<VendorEquipmentDispatcher />} />
+          <Route path="schedule" element={<VendorScheduleDispatcher />} />
+
+          {/* Sound Only */}
+          <Route path="services" element={<SoundServices />} />
+
           {/* Catering Specific Routes */}
           <Route path="menus" element={<MenuBuilder />} />
           <Route path="bookings" element={<CateringBookings />} />
@@ -236,9 +259,7 @@ export default function AppRouter() {
           <Route path="decor-bookings" element={<DecorBookings />} />
           <Route path="themes" element={<ThemeManager />} />
 
-          {/* Lighting & Effects Specific Routes */}
-          <Route path="equipment" element={<LightingInventory />} />
-          <Route path="schedule" element={<LightingScheduleManager />} />
+          {/* Lighting & Effects - Specifics */}
           <Route path="lighting-bookings" element={<LightingBookings />} />
           <Route path="staff" element={<LightingStaff />} />
           <Route path="lighting-reports" element={<LightingReports />} />
@@ -253,6 +274,9 @@ export default function AppRouter() {
 
           {/* Chat/Inbox */}
           <Route path="inbox" element={<VendorInbox />} />
+
+          {/* Notifications */}
+          <Route path="notifications" element={<NotificationsPage />} />
 
           {/* Profile */}
           <Route path="profile" element={<VendorProfile />} />

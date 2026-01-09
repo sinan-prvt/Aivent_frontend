@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiSend, FiMessageSquare, FiZap, FiChevronRight, FiUser, FiCpu } from "react-icons/fi";
 import { askPlanner } from "../api/planner.api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 const FloatingAIAssistant = () => {
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -22,6 +24,9 @@ const FloatingAIAssistant = () => {
         if (isOpen) scrollToBottom();
     }, [chatHistory, isOpen, isTyping]);
 
+    // Hide for Vendors and Admins
+    if (user?.role === 'vendor' || user?.role === 'admin') return null;
+
     const handleSend = async (e) => {
         e.preventDefault();
         const currentMsg = message.trim();
@@ -30,6 +35,22 @@ const FloatingAIAssistant = () => {
         const userMsg = { id: Date.now(), role: "user", content: currentMsg };
         setChatHistory(prev => [...prev, userMsg]);
         setMessage("");
+
+        // [GREETING INTERCEPTOR] Handle greetings locally
+        const lowMsg = currentMsg.toLowerCase();
+        if (["hi", "hello", "hey", "hy", "hola"].includes(lowMsg)) {
+            setTimeout(() => {
+                setChatHistory(prev => [...prev, {
+                    id: Date.now() + 1,
+                    role: "assistant",
+                    content: "Hello! I'm your Aivent Assistant. I can help you find vendors like DJs, caterers, or decorators. What's on your mind?"
+                }]);
+                // Reset context for a fresh start
+                setPlanningContext({ event_type: null, budget: null });
+            }, 500); // Small delay for natural feel
+            return;
+        }
+
         setIsTyping(true);
 
         try {
@@ -51,6 +72,11 @@ const FloatingAIAssistant = () => {
             // Handle cases where the backend doesn't return a clear explanation but has an answer or reason
             if (!result.explanation && result.answer) {
                 assistantContent = result.answer;
+            }
+
+            // [RAG UPDATE] Show context info if available (Fallback)
+            if (result.context_info) {
+                assistantContent += "\n\n" + result.context_info;
             }
 
             if (result.error) {
@@ -86,18 +112,16 @@ const FloatingAIAssistant = () => {
         <div className="fixed bottom-10 left-10 z-[9999] flex flex-col items-start translate-y-[-20%] sm:translate-y-0">
             {/* CHAT WINDOW */}
             {isOpen && (
-                <div className="mb-6 w-[340px] sm:w-[420px] h-[600px] max-h-[70vh] bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 flex flex-col overflow-hidden animate-slideUp">
+                <div className="-mb-18 w-[340px] sm:w-[420px] h-[800px] max-h-[90vh] bg-white/70 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.4)] border border-white/50 flex flex-col overflow-hidden animate-slideUp ml-14 ">
                     {/* Header */}
-                    <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 p-8 text-white flex items-center justify-between">
+                    <div className="bg-gradient-to-r from-gray-700 via-indigo-900 to-purple-900 p-2 text-white flex items-center justify-between backdrop-blur-lg">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center text-2xl border border-white/20">
-                                <FiZap className="animate-pulse text-yellow-300" />
-                            </div>
+
                             <div>
-                                <h3 className="font-black text-xs uppercase tracking-[0.2em] opacity-80 mb-1">Aivent Assistant</h3>
-                                <div className="flex items-center gap-2">
+                                <h3 className="font-black text-2xs uppercase  opacity-80 mb-1 ml-30">Aivent Assistant</h3>
+                                <div className="flex items-center ml-32 gap-2">
                                     <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_10px_rgba(74,222,128,0.5)] animate-pulse" />
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">System Online</span>
+                                    <span className="text-xs font-black text-white  uppercase tracking-widest">System Online</span>
                                 </div>
                             </div>
                         </div>
@@ -110,19 +134,34 @@ const FloatingAIAssistant = () => {
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#FDFDFF]">
+                    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-transparent">
                         {chatHistory.map(msg => (
                             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                 <div className={`flex items-start gap-4 max-w-[92%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border ${msg.role === 'user'
-                                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
-                                        : 'bg-purple-50 text-purple-600 border-purple-100'
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${msg.role === 'user'
+                                        ? 'bg-indigo-600/10 text-indigo-600 border border-indigo-200/50 shadow-none'
+                                        : 'bg-transparent text-purple-600'
                                         }`}>
-                                        {msg.role === 'user' ? <FiUser size={18} /> : <FiCpu size={18} />}
+                                        {msg.role === 'user' ? <FiUser size={18} /> : (
+                                            <>
+                                                <img
+                                                    src="/ai-chat.png"
+                                                    alt="AI"
+                                                    className="w-full h-full object-contain filter drop-shadow-md "
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }}
+                                                />
+                                                <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-transparent text-purple-600 rounded-xl">
+                                                    <FiCpu size={20} />
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                    <div className={`p-5 rounded-3xl text-[13.5px] font-medium leading-[1.6] shadow-[0_8px_30px_rgb(0,0,0,0.04)] whitespace-pre-wrap ${msg.role === 'user'
+                                    <div className={`p-5 rounded-3xl text-[13.5px] font-medium leading-[1.6] shadow-sm whitespace-pre-wrap ${msg.role === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-white text-slate-700 border border-slate-50 rounded-tl-none'
+                                        : 'bg-white/60 backdrop-blur-sm text-slate-700 border border-white/40 rounded-tl-none'
                                         }`}>
                                         {msg.content}
                                     </div>
@@ -165,8 +204,19 @@ const FloatingAIAssistant = () => {
 
                         {isTyping && (
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
-                                    <FiCpu size={18} />
+                                <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src="/ai-chat.png"
+                                        alt="AI"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <div style={{ display: 'none' }} className="w-full h-full items-center justify-center bg-purple-50 text-purple-600 rounded-xl">
+                                        <FiCpu size={20} />
+                                    </div>
                                 </div>
                                 <div className="p-5 bg-white border border-slate-100 rounded-3xl rounded-tl-none shadow-sm flex gap-1.5 items-center">
                                     <div className="w-1.5 h-1.5 bg-indigo-200 rounded-full animate-bounce" />
@@ -179,44 +229,66 @@ const FloatingAIAssistant = () => {
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-8 bg-white border-t border-slate-50">
-                        <form onSubmit={handleSend} className="relative flex items-center gap-3">
-                            <input
-                                type="text"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Message Aivent AI..."
-                                className="flex-1 bg-slate-50/80 text-slate-800 placeholder-slate-400 rounded-[1.5rem] px-7 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all font-bold border-none"
-                            />
+                    <div className="px-8 py-6 bg-transparen relative">
+
+                        {/* Subtle glow */}
+                        <div className="absolute inset-x-0 -top-6 h-12 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 blur-2xl opacity-70 pointer-events-none" />
+
+                        <form onSubmit={handleSend} className="relative flex items-center gap-4">
+
+                            {/* Input shell */}
+                            <div className="flex-1 flex items-center bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-[0_20px_10px_-20px_rgba(0,0,0,0.4)] border border-black/40 px-6 py-4  transition-all">
+
+
+
+                                <input
+                                    type="text"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Ask Aivent AI..."
+                                    className="flex-1 bg-transparent outline-none text-sm font-semibold text-slate-800 placeholder-slate-400"
+                                />
+                            </div>
+
+                            {/* Send button */}
                             <button
                                 type="submit"
                                 disabled={!message.trim() || isTyping}
-                                className="w-14 h-14 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 active:scale-90 transition-all shadow-[0_10px_25px_-5px_rgba(79,70,229,0.4)] flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:grayscale"
+                                className="w-14 h-14 rounded-2xl bg-gradient-to-r from-gray-700 via-indigo-900 to-purple-900 text-white flex items-center justify-center shadow-[0_15px_35px_-10px_rgba(79,70,229,0.6)] hover:scale-110 active:scale-95 transition-all disabled:opacity-40 disabled:grayscale"
                             >
-                                <FiSend size={22} className="ml-1" />
+                                <FiSend size={20} />
                             </button>
+
                         </form>
-                        <div className="flex items-center justify-center gap-2 mt-6">
-                            <div className="h-[1px] w-8 bg-slate-100" />
-                            <p className="text-[7px] text-slate-300 font-black uppercase tracking-[0.3em]">Neural Engine v1.0</p>
-                            <div className="h-[1px] w-8 bg-slate-100" />
-                        </div>
+
+                        {/* Footer */}
+
                     </div>
+
                 </div>
             )}
 
             {/* FLOAT BUTTON */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-[0_20px_50px_-10px_rgba(79,70,229,0.4)] transition-all duration-500 group relative border-4 border-white ${isOpen
-                    ? 'bg-slate-900 text-white rotate-[135deg] scale-90 rounded-full'
-                    : 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white hover:scale-110'
+                className={`w-20 h-20 flex items-center justify-center transition-all duration-500 group relative -ml-4 ${isOpen
+                    ? 'bg-slate-900 text-white rotate-[135deg] scale-60 rounded-full shadow-lg'
+                    : 'bg-transparent text-white hover:scale-110 !shadow-none'
                     }`}
             >
                 {isOpen ? <FiX size={32} /> : (
-                    <div className="relative">
-                        <FiMessageSquare size={32} />
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-rose-500 border-[3px] border-white rounded-full flex items-center justify-center">
+                    <div className="relative w-full h-full flex items-center justify-center ">
+                        <img
+                            src="/ai-chat.png"
+                            alt="Chat"
+                            className="w-16 h-16 object-contain group-hover:scale-110 transition-transform"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                            }}
+                        />
+
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-rose-500 border-[3px] border-white rounded-full flex items-center justify-center shadow-md">
                             <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                         </div>
                     </div>

@@ -7,7 +7,7 @@ import {
 } from "../utils/token";
 
 // Catalog Service runs on port 8003
-const API_BASE_URL = "http://localhost:8003/api/catalog";
+const API_BASE_URL = "http://localhost:8003/api/catalog/";
 
 const catalogApi = axios.create({
   baseURL: API_BASE_URL,

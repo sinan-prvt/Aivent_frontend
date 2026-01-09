@@ -2,24 +2,31 @@
 import React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar, FiUser, FiLayers, FiBarChart2 } from "react-icons/fi";
+import { FiHome, FiBox, FiSettings, FiLogOut, FiMessageSquare, FiList, FiCalendar, FiUser, FiLayers, FiBarChart2, FiBell } from "react-icons/fi";
+import { useNotifications } from "../../../app/providers/NotificationProvider";
 
-const SidebarItem = ({ to, icon: Icon, label, active }) => (
+const SidebarItem = ({ to, icon: Icon, label, active, badge }) => (
   <Link
     to={to}
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${active
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium relative ${active
       ? "bg-indigo-50 text-indigo-600"
       : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
       }`}
   >
     <Icon className="w-5 h-5" />
-    {label}
+    <span className="flex-1">{label}</span>
+    {badge > 0 && (
+      <span className="absolute right-4 top-3 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white ring-2 ring-white">
+        {badge > 9 ? '9+' : badge}
+      </span>
+    )}
   </Link>
 );
 
 export default function VendorLayout() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -27,7 +34,6 @@ export default function VendorLayout() {
     navigate("/login");
   };
 
-  // Category mapping for slugs and custom labels
   const categoryConfig = {
     "1": { slug: "catering", label: "Overview", products: "Menus" },
     "2": { slug: "decoration", label: "Overview", products: "Themes" },
@@ -151,6 +157,28 @@ export default function VendorLayout() {
                 active={pathname.includes("/staff")}
               />
             </>
+          ) : catId === "5" ? (
+            <>
+              {/* SOUND & MUSIC SPECIFIC NAVIGATION */}
+              <SidebarItem
+                to={basePath}
+                icon={FiHome}
+                label="Overview"
+                active={pathname === basePath || pathname === `${basePath}/`}
+              />
+              <SidebarItem
+                to={`${basePath}/services`}
+                icon={FiList}
+                label="Services"
+                active={pathname.includes("/services")}
+              />
+              <SidebarItem
+                to={`${basePath}/schedule`}
+                icon={FiCalendar}
+                label="Schedule"
+                active={pathname.includes("/schedule")}
+              />
+            </>
           ) : catId === "4" ? (
             <>
               {/* PHOTOGRAPHY SPECIFIC NAVIGATION */}
@@ -203,6 +231,13 @@ export default function VendorLayout() {
             icon={FiUser}
             label="Profile"
             active={pathname.includes("/profile")}
+          />
+          <SidebarItem
+            to={`${basePath}/notifications`}
+            icon={FiBell}
+            label="Notifications"
+            active={pathname.includes("/notifications")}
+            badge={unreadCount}
           />
           <SidebarItem
             to={`${basePath}/inbox`}
