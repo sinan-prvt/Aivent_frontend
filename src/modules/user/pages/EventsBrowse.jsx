@@ -2,9 +2,13 @@
 import React from 'react';
 import Navbar from '../../../components/layout/Navbar';
 import { FiArrowRight } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/AuthProvider';
 
 export default function EventsBrowse() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
     const events = [
         {
             title: "Weddings",
@@ -21,7 +25,7 @@ export default function EventsBrowse() {
         {
             title: "Social Gatherings",
             desc: "Birthdays, anniversaries, and family reunions.",
-            image: "https://images.unsplash.com/photo-1530103862676-de3c9da59af7?q=80&w=2070&auto=format&fit=crop",
+            image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop",
             link: "/categories/party"
         },
         {
@@ -45,6 +49,14 @@ export default function EventsBrowse() {
 
     ];
 
+    const handleEventClick = (event) => {
+        if (user) {
+            navigate("/magic-planner", { state: { prompt: `Plan a ${event.title}` } });
+        } else {
+            navigate("/login");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
             <Navbar />
@@ -62,7 +74,11 @@ export default function EventsBrowse() {
             <div className="max-w-7xl mx-auto px-6 py-16">
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {events.map((event, idx) => (
-                        <Link to={event.link} key={idx} className="group relative rounded-3xl overflow-hidden aspect-[4/5] shadow-lg cursor-pointer">
+                        <div
+                            onClick={() => handleEventClick(event)}
+                            key={idx}
+                            className="group relative rounded-3xl overflow-hidden aspect-[4/5] shadow-lg cursor-pointer"
+                        >
                             <img src={event.image} alt={event.title} className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex flex-col justify-end">
                                 <h3 className="text-3xl font-bold text-white mb-2">{event.title}</h3>
@@ -71,7 +87,7 @@ export default function EventsBrowse() {
                                     <FiArrowRight className="w-5 h-5" />
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
             </div>

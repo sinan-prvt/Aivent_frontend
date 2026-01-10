@@ -27,7 +27,7 @@ const PlanEvent = () => {
 
     // Get the category ID for the active tab - make matching flexible
     const activeCategoryId = categories?.find(
-        (cat) => cat.name.trim().toLowerCase() === activeTab.trim().toLowerCase()
+        (cat) => cat.name && typeof cat.name === 'string' && typeof activeTab === 'string' && cat.name.trim().toLowerCase() === activeTab.trim().toLowerCase()
     )?.id;
 
     // Fetch Products filtered by category

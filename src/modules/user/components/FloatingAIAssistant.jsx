@@ -9,6 +9,7 @@ const FloatingAIAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [suggestions, setSuggestions] = useState(["Hi", "Plan a Wedding", "Find a DJ", "Photography"]);
     const [chatHistory, setChatHistory] = useState([
         { id: 1, role: "assistant", content: "Hello! I'm your Aivent AI Assistant. How can I help you plan your event today?", products: [] }
     ]);
@@ -27,14 +28,15 @@ const FloatingAIAssistant = () => {
     // Hide for Vendors and Admins
     if (user?.role === 'vendor' || user?.role === 'admin') return null;
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        const currentMsg = message.trim();
+    const handleSend = async (e, forcedMsg = null) => {
+        if (e) e.preventDefault();
+        const currentMsg = (forcedMsg || message).trim();
         if (!currentMsg || isTyping) return;
 
         const userMsg = { id: Date.now(), role: "user", content: currentMsg };
         setChatHistory(prev => [...prev, userMsg]);
         setMessage("");
+        setSuggestions([]); // Clear suggestions during processing
 
         // [GREETING INTERCEPTOR] Handle greetings locally
         const lowMsg = currentMsg.toLowerCase();
@@ -47,6 +49,7 @@ const FloatingAIAssistant = () => {
                 }]);
                 // Reset context for a fresh start
                 setPlanningContext({ event_type: null, budget: null });
+                setSuggestions(["Plan a Wedding", "Find a DJ", "Magic Planner"]);
             }, 500); // Small delay for natural feel
             return;
         }
@@ -65,6 +68,13 @@ const FloatingAIAssistant = () => {
                     event_type: result.context.event_type,
                     budget: result.context.budget
                 });
+            }
+
+            // Update suggestions from backend if available
+            if (result.suggestions) {
+                setSuggestions(result.suggestions);
+            } else {
+                setSuggestions(["Find a DJ", "Catering", "Magic Planner"]);
             }
 
             let assistantContent = result.explanation || result.reason || "I found some great options for you!";
@@ -103,9 +113,14 @@ const FloatingAIAssistant = () => {
                 role: "assistant",
                 content: "My connection to the AI engine is a bit unstable. Please try again or visit our Magic Planner page!"
             }]);
+            setSuggestions(["Try again", "Go Home"]);
         } finally {
             setIsTyping(false);
         }
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        handleSend(null, suggestion);
     };
 
     return (
@@ -183,7 +198,27 @@ const FloatingAIAssistant = () => {
                                                 >
                                                     <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-50 shrink-0 border border-slate-100">
                                                         <img
-                                                            src={product.image ? `http://localhost:8003${product.image}` : "https://via.placeholder.com/100"}
+                                                            src={(() => {
+                                                                if (!product.image) return "https://via.placeholder.com/100";
+
+                                                                let url = product.image;
+
+                                                                // Handle internal Docker hostnames
+                                                                if (url.includes('catalog-service:8000')) {
+                                                                    url = url.replace('catalog-service:8000', 'localhost:8003');
+                                                                }
+
+                                                                // If it's already an absolute URL (after hostname fix), use it
+                                                                if (url.startsWith('http')) return url;
+
+                                                                // Otherwise, build the full URL from the base
+                                                                const base = "http://localhost:8003";
+                                                                const hasMedia = url.includes('/media/');
+                                                                const leadingSlash = url.startsWith('/') ? '' : '/';
+                                                                const mediaPrefix = hasMedia ? '' : 'media/';
+
+                                                                return `${base}${leadingSlash}${mediaPrefix}${url}`;
+                                                            })()}
                                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                         />
                                                     </div>
@@ -230,6 +265,21 @@ const FloatingAIAssistant = () => {
 
                     {/* Input Area */}
                     <div className="px-8 py-6 bg-transparen relative">
+
+                        {/* Suggestions Area */}
+                        {suggestions.length > 0 && !isTyping && (
+                            <div className="flex flex-wrap gap-2 mb-4 animate-fadeIn">
+                                {suggestions.map((suggestion, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleSuggestionClick(suggestion)}
+                                        className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 transition-all active:scale-95"
+                                    >
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Subtle glow */}
                         <div className="absolute inset-x-0 -top-6 h-12 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 blur-2xl opacity-70 pointer-events-none" />
@@ -301,8 +351,15 @@ const FloatingAIAssistant = () => {
                     from { transform: translateY(40px) scale(0.9); opacity: 0; filter: blur(10px); }
                     to { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
                 }
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
                 .animate-slideUp {
                     animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.4s ease-out forwards;
                 }
             `}</style>
         </div>

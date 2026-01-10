@@ -108,17 +108,17 @@ export default function Home() {
     setShowCategoriesModal(true);
   };
 
-  const handleCategoryChange = (category) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter(c => c !== category));
+  const handleCategoryChange = (categoryName) => {
+    if (selectedCategories.includes(categoryName)) {
+      setSelectedCategories(selectedCategories.filter(c => c !== categoryName));
     } else {
-      setSelectedCategories([...selectedCategories, category]);
+      setSelectedCategories([...selectedCategories, categoryName]);
     }
   };
 
   const handleGeneratePlan = () => {
     setShowCategoriesModal(false);
-    setSelectedCategories([]);
+    // Remove setSelectedCategories([]) to preserve state for navigation
 
     if (user) {
       navigate("/dashboard/plan", {
@@ -297,23 +297,10 @@ export default function Home() {
                 {/* Center Column - Form */}
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-                    {/* Form Header */}
-                    <div className="border-b border-gray-100 p-8 bg-gradient-to-r from-white to-gray-50/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-2xl font-bold text-gray-900">
-                          Event Specification Form
-                        </h3>
-                        <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
-                          AI-Powered
-                        </div>
-                      </div>
-                      <p className="text-gray-600">
-                        Complete the form to receive a comprehensive event blueprint
-                      </p>
-                    </div>
+
 
                     {/* Form Content */}
-                    <div className="mt-10 max-w-3xl mx-auto bg-white p-8 shadow-xl rounded-2xl border">
+                    <div className=" max-w-3xl mx-auto bg-white p-8 shadow-xl rounded-2xl border">
                       <form onSubmit={handleStartPlanning}>
                         <div className="grid md:grid-cols-3 gap-6">
                           <div className="flex flex-col">
@@ -669,21 +656,21 @@ export default function Home() {
                       {categories?.map((category) => (
                         <button
                           key={category.id}
-                          className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${selectedCategories.includes(category.id)
+                          className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${selectedCategories.includes(category.name)
                             ? "border-gray-900 bg-gray-900 text-white"
                             : "border-gray-200 hover:border-gray-300"
                             }`}
-                          onClick={() => handleCategoryChange(category.id)}
+                          onClick={() => handleCategoryChange(category.name)}
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-medium">
                               {category.name}
                             </span>
-                            {selectedCategories.includes(category.id) && (
+                            {selectedCategories.includes(category.name) && (
                               <FiCheck className="w-5 h-5" />
                             )}
                           </div>
-                          <p className={`text-sm mt-1 ${selectedCategories.includes(category.id) ? "text-gray-300" : "text-gray-500"}`}>
+                          <p className={`text-sm mt-1 ${selectedCategories.includes(category.name) ? "text-gray-300" : "text-gray-500"}`}>
                             {category.vendorCount} vendors available
                           </p>
                         </button>

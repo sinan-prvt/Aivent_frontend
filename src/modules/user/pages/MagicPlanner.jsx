@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FiZap, FiSearch, FiMapPin, FiAward, FiDollarSign, FiInfo, FiChevronRight, FiCheckCircle, FiStar } from "react-icons/fi";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
@@ -10,7 +10,8 @@ import ChatModal from "../components/ChatModal";
 
 const MagicPlanner = () => {
     const navigate = useNavigate();
-    const [prompt, setPrompt] = useState("");
+    const location = useLocation();
+    const [prompt, setPrompt] = useState(location.state?.prompt || "");
     const [isPlanning, setIsPlanning] = useState(false);
     const [planResults, setPlanResults] = useState(null);
     const [preferences, setPreferences] = useState({
