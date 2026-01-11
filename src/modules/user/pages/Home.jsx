@@ -476,96 +476,110 @@ export default function Home() {
           </div>
         </section >
 
-        {/* Key Features */}
-        < section className="py-20 px-6 bg-gradient-to-b from-gray-50 to-white" >
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        {/* Strategic Capabilities */}
+        <section className="py-24 px-6 bg-gray-50/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-4 border border-blue-100">
+                <TbRocket className="w-4 h-4" />
+                Enterprise Ready
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
                 Strategic Capabilities
-                <span className="block text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
-                  for Enterprise Events
+                <span className="block text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text">
+                  for Modern Events
                 </span>
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Comprehensive solutions designed for complex organizational requirements
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Comprehensive solutions designed for complex organizational requirements and high-impact corporate gatherings.
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <TbCalendarStats className="w-7 h-7 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Portfolio Management
-                </h3>
-                <p className="text-gray-600">
-                  Centralized oversight and coordination for multiple concurrent enterprise events with real-time visibility.
-                </p>
-              </div>
+              {[
+                {
+                  title: "Portfolio Management",
+                  desc: "Centralized oversight and coordination for multiple concurrent enterprise events with real-time visibility.",
+                  icon: <TbCalendarStats className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
+                  accentClass: "bg-blue-500",
+                  bgAccentClass: "group-hover:bg-blue-500"
+                },
+                {
+                  title: "Strategic Sourcing",
+                  desc: "Intelligent vendor selection and contract management with performance analytics and compliance tracking.",
+                  icon: <FiUsers className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=2069&auto=format&fit=crop",
+                  accentClass: "bg-indigo-500",
+                  bgAccentClass: "group-hover:bg-indigo-500"
+                },
+                {
+                  title: "Financial Governance",
+                  desc: "Multi-level approval workflows, budget controls, and comprehensive financial reporting with audit trails.",
+                  icon: <FiDollarSign className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2011&auto=format&fit=crop",
+                  accentClass: "bg-purple-500",
+                  bgAccentClass: "group-hover:bg-purple-500"
+                },
+                {
+                  title: "Performance Intelligence",
+                  desc: "Advanced analytics and ROI measurement with predictive insights for continuous optimization.",
+                  icon: <FiTrendingUp className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+                  accentClass: "bg-green-500",
+                  bgAccentClass: "group-hover:bg-green-500"
+                },
+                {
+                  title: "Risk & Compliance",
+                  desc: "Enterprise-grade security protocols, regulatory compliance, and comprehensive risk mitigation strategies.",
+                  icon: <FiShield className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?q=80&w=2076&auto=format&fit=crop",
+                  accentClass: "bg-red-500",
+                  bgAccentClass: "group-hover:bg-red-500"
+                },
+                {
+                  title: "AI Optimization",
+                  desc: "Machine learning algorithms for predictive planning, resource optimization, and automated workflow enhancement.",
+                  icon: <HiOutlineSparkles className="w-6 h-6" />,
+                  img: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070&auto=format&fit=crop",
+                  accentClass: "bg-orange-500",
+                  bgAccentClass: "group-hover:bg-orange-500"
+                }
+              ].map((feature, idx) => (
+                <div
+                  key={idx}
+                  className="group relative h-[320px] rounded-3xl overflow-hidden cursor-default transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]"
+                >
+                  {/* Background Image */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url('${feature.img}')` }}
+                  />
 
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <FiUsers className="w-7 h-7 text-indigo-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Strategic Sourcing
-                </h3>
-                <p className="text-gray-600">
-                  Intelligent vendor selection and contract management with performance analytics and compliance tracking.
-                </p>
-              </div>
+                  {/* Glassmorphic Overlay */}
+                  <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] transition-all duration-500 group-hover:bg-black/70 group-hover:backdrop-blur-sm" />
 
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <FiDollarSign className="w-7 h-7 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Financial Governance
-                </h3>
-                <p className="text-gray-600">
-                  Multi-level approval workflows, budget controls, and comprehensive financial reporting with audit trails.
-                </p>
-              </div>
+                  {/* Content Container */}
+                  <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                    <div className={`w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6 text-white ${feature.bgAccentClass} group-hover:border-transparent transition-all duration-500 shadow-xl`}>
+                      {feature.icon}
+                    </div>
 
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <FiTrendingUp className="w-7 h-7 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Performance Intelligence
-                </h3>
-                <p className="text-gray-600">
-                  Advanced analytics and ROI measurement with predictive insights for continuous optimization.
-                </p>
-              </div>
+                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight group-hover:translate-x-1 transition-transform duration-300">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm leading-relaxed opacity-70 group-hover:opacity-100 transition-all duration-500 line-clamp-2 group-hover:line-clamp-none">
+                      {feature.desc}
+                    </p>
 
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <FiShield className="w-7 h-7 text-red-600" />
+                    {/* Subtle accent line mapping */}
+                    <div className={`absolute bottom-0 left-0 h-1.5 ${feature.accentClass} transition-all duration-500 w-0 group-hover:w-full`} />
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  Risk & Compliance
-                </h3>
-                <p className="text-gray-600">
-                  Enterprise-grade security protocols, regulatory compliance, and comprehensive risk mitigation strategies.
-                </p>
-              </div>
-
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <HiOutlineSparkles className="w-7 h-7 text-orange-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  AI Optimization
-                </h3>
-                <p className="text-gray-600">
-                  Machine learning algorithms for predictive planning, resource optimization, and automated workflow enhancement.
-                </p>
-              </div>
+              ))}
             </div>
           </div>
-        </section >
+        </section>
 
         {/* Professional Footer */}
         < footer className="bg-gray-900 text-white py-16 px-6" >
