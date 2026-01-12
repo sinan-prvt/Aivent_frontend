@@ -16,6 +16,7 @@ import About from "../../modules/user/pages/About";
 import Offers from "../../modules/user/pages/Offers";
 import Inspiration from "../../modules/user/pages/Inspiration";
 import EventsBrowse from "../../modules/user/pages/EventsBrowse";
+import CheckoutPage from "../../modules/user/pages/CheckoutPage";
 
 /* Auth utilities */
 import ForgotPassword from "../../modules/auth/pages/ForgotPassword";
@@ -173,6 +174,14 @@ export default function AppRouter() {
           element={
             <PrivateRoute>
               <PlanEvent />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PrivateRoute>
+              <CheckoutPage />
             </PrivateRoute>
           }
         />

@@ -252,7 +252,10 @@ const PlanEvent = () => {
                             </div>
                         </div>
 
-                        <button className="w-full mt-8 py-3 bg-indigo-100 text-indigo-700 rounded-xl font-bold hover:bg-indigo-200 transition-colors">
+                        <button
+                            onClick={() => navigate("/checkout", { state: { selectedItems, eventData: initialState.eventData, totalBudget } })}
+                            className="w-full mt-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
+                        >
                             Review & Book
                         </button>
 
