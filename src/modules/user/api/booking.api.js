@@ -16,8 +16,12 @@ bookingApi.interceptors.request.use((config) => {
     return config;
 });
 
-export const createBooking = async (bookingData) => {
-    const response = await bookingApi.post("/", bookingData);
+export const createBooking = async (bookingData, idempotencyKey) => {
+    const response = await bookingApi.post("/", bookingData, {
+        headers: {
+            'Idempotency-Key': idempotencyKey
+        }
+    });
     return response.data;
 };
 
@@ -28,5 +32,15 @@ export const getBookingDetails = async (bookingId) => {
 
 export const confirmBooking = async (bookingId) => {
     const response = await bookingApi.post(`/${bookingId}/confirm/`);
+    return response.data;
+};
+
+export const approveBooking = async (bookingId) => {
+    const response = await bookingApi.post(`/${bookingId}/approve/`);
+    return response.data;
+};
+
+export const rejectBooking = async (bookingId) => {
+    const response = await bookingApi.post(`/${bookingId}/reject/`);
     return response.data;
 };

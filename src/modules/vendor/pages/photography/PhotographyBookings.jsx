@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
-import { useAuth } from '../../../../app/providers/AuthProvider';
 
-export default function CateringBookings() {
-    const { user } = useAuth();
+export default function PhotographyBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -74,7 +72,7 @@ export default function CateringBookings() {
             {/* Main Booking List */}
             <div className="flex-1 flex flex-col space-y-6 overflow-hidden">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h1 className="text-3xl font-extrabold text-gray-900 font-sans tracking-tight">Catering Bookings</h1>
+                    <h1 className="text-3xl font-extrabold text-gray-900 font-sans tracking-tight">Photography Bookings</h1>
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white shadow-sm">
                         <FiDownload /> Export Bookings
                     </button>
@@ -104,7 +102,7 @@ export default function CateringBookings() {
                                     <th className="px-6 py-4">Event Type</th>
                                     <th className="px-6 py-4">Event Date</th>
                                     <th className="px-6 py-4">Guests</th>
-                                    <th className="px-6 py-4">Product</th>
+                                    <th className="px-6 py-4">Package</th>
                                     <th className="px-6 py-4">Status</th>
                                     <th className="px-6 py-4">Amount</th>
                                 </tr>
@@ -128,7 +126,7 @@ export default function CateringBookings() {
                                                 {details.guests || '-'}
                                             </td>
                                             <td className="px-6 py-4 text-gray-500">
-                                                {details.product_title || 'Service'}
+                                                {details.product_title || 'Photo Package'}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.booking_status)}`}>
@@ -186,7 +184,7 @@ export default function CateringBookings() {
                             <div className="space-y-2 text-sm text-gray-600">
                                 <p><strong>Type:</strong> {selectedBooking.booking_details?.event_type}</p>
                                 <p><strong>Guests:</strong> {selectedBooking.booking_details?.guests}</p>
-                                <p><strong>Product:</strong> {selectedBooking.booking_details?.product_title}</p>
+                                <p><strong>Package:</strong> {selectedBooking.booking_details?.product_title}</p>
                             </div>
                         </div>
 
@@ -198,7 +196,6 @@ export default function CateringBookings() {
                             </div>
                         </div>
 
-                        {/* Dummy data for sections not yet in API */}
                         <div className="bg-gray-50 rounded-xl p-4">
                             <h3 className="font-bold text-gray-900 text-sm mb-3">Client Notes</h3>
                             <p className="text-sm text-gray-600 leading-relaxed italic">

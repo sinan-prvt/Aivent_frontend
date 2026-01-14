@@ -86,14 +86,23 @@ export default function Navbar() {
                   w-10 h-10 rounded-full bg-amber-200 
                   flex items-center justify-center cursor-pointer
                   border border-amber-300
+                  ml-4
                 "
                 onClick={() => navigate("/profile")}
+                title="Profile"
               >
                 <span className="font-semibold text-gray-700">
                   {user?.displayName?.[0]?.toUpperCase() ??
                     user?.email?.[0]?.toUpperCase()}
                 </span>
               </div>
+
+              <button
+                onClick={() => navigate("/my-orders")}
+                className="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-full hover:bg-neutral-200 text-sm font-medium"
+              >
+                My Orders
+              </button>
 
               <button
                 onClick={handleLogout}

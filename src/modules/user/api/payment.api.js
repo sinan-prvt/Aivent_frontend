@@ -26,6 +26,11 @@ export const verifyPayment = async (verificationData) => {
     return response.data;
 };
 
+export const confirmCODPayment = async (paymentData) => {
+    const response = await paymentApi.post("/cod/", paymentData);
+    return response.data;
+};
+
 // For testing/mocking
 export const triggerMockSuccess = async (razorpayOrderId) => {
     const response = await paymentApi.post("/mock-success/", { razorpay_order_id: razorpayOrderId });

@@ -7,7 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../api/catalog.api";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import Navbar from "../../../components/layout/Navbar"; // Assuming standard Navbar
-import { FiMessageSquare, FiStar, FiFilter, FiInfo } from "react-icons/fi";
+import { FiMessageSquare, FiStar, FiFilter, FiInfo, FiZap, FiCheckCircle, FiCalendar, FiUsers as FiGuests } from "react-icons/fi";
+import { generatePlan } from "../api/planner.api";
+import { toast } from "react-toastify";
 
 const PlanEvent = () => {
     const location = useLocation();
@@ -15,12 +17,50 @@ const PlanEvent = () => {
     const initialState = location.state || {
         eventData: { eventType: "Wedding", budget: 20000, guests: 150 },
         categories: ["Venue", "Catering"],
+        masterOrderId: null,
     };
+
+    const masterOrderId = initialState.masterOrderId;
 
     const [activeTab, setActiveTab] = useState(initialState.categories[0] || "Venue");
     const [budget, setBudget] = useState([2000, 8500]); // Mock range
     const [selectedItems, setSelectedItems] = useState([]);
     const [chatProduct, setChatProduct] = useState(null);
+    const [aiPlan, setAiPlan] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    // Fetch AI Plan if eventData is available
+    React.useEffect(() => {
+        const fetchAiPlan = async () => {
+            if (initialState.eventData?.budget) {
+                setIsGenerating(true);
+                try {
+                    const prompt = `Plan a ${initialState.eventData.eventType} for ${initialState.eventData.guests} guests with a budget of ${initialState.eventData.budget} INR.`;
+                    const result = await generatePlan(prompt, {
+                        event_type: initialState.eventData.eventType,
+                        budget: initialState.eventData.budget,
+                        guests: parseInt(initialState.eventData.guests)
+                    });
+
+                    setAiPlan(result);
+
+                    // Auto-select AI recommended products
+                    if (result.plan) {
+                        const recommendedProducts = result.plan
+                            .filter(item => item.recommended && item.recommended_product)
+                            .map(item => ({ ...item.recommended_product, ai_reason: item.reason, is_ai_pick: true }));
+                        setSelectedItems(recommendedProducts);
+                    }
+                } catch (error) {
+                    console.error("Failed to generate AI plan:", error);
+                    toast.error("AI Planning service is currently unavailable.");
+                } finally {
+                    setIsGenerating(false);
+                }
+            }
+        };
+        fetchAiPlan();
+    }, []);
 
     // Fetch Categories
     const { data: categories } = useCategories();
@@ -57,21 +97,55 @@ const PlanEvent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col relative">
             <Navbar />
 
-            <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+            {isGenerating && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                    <div className="text-center group">
+                        <div className="relative mb-6">
+                            <div className="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+                            <FiZap className="absolute inset-0 m-auto text-indigo-600 w-8 h-8 animate-pulse" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Generating AI Plan...</h2>
+                        <p className="text-gray-500 animate-bounce">Selecting the best products for your {initialState.eventData.eventType}</p>
+                    </div>
+                </div>
+            )}
+
+            <main className="flex-1 container mx-auto px-4 py-8 pt-24 flex flex-col lg:flex-row gap-8">
 
                 {/* LEFT COLUMN - MAIN CONTENT */}
                 <div className="flex-1 space-y-8">
 
                     {/* Header */}
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Plan your event</h1>
-                            <p className="text-sm text-gray-500 mt-1">
-                                Planning: <span className="font-medium text-gray-900">{initialState.eventData.eventType}</span>
-                            </p>
+                            <div className="flex flex-wrap gap-4 mt-2">
+                                <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                    Event: <span className="font-semibold text-gray-900">{initialState.eventData.eventType}</span>
+                                </p>
+                                {initialState.eventData.eventDate && (
+                                    <div className="flex items-center gap-1.5 border-l pl-4 border-gray-200">
+                                        <FiCalendar className="text-indigo-500" />
+                                        <input
+                                            type="date"
+                                            className="text-sm font-semibold text-gray-900 border-none p-0 focus:ring-0 cursor-pointer bg-transparent"
+                                            defaultValue={initialState.eventData.eventDate}
+                                            onChange={(e) => {
+                                                initialState.eventData.eventDate = e.target.value;
+                                                // Optional: trigger re-plan if date changes significantly
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                <p className="text-sm text-gray-500 flex items-center gap-1.5 border-l pl-4 border-gray-200">
+                                    <FiGuests className="text-indigo-500" />
+                                    Guests: <span className="font-semibold text-gray-900">{initialState.eventData.guests}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -93,28 +167,43 @@ const PlanEvent = () => {
                         </nav>
                     </div>
 
-                    {/* Budget Allocation / Filters */}
+                    {/* Budget Allocation / AI Insights */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-900">{activeTab} Budget Allocation</h3>
-                            <span className="text-xs text-gray-500">Adjust sliders to find vendors that fit your budget.</span>
+                            {aiPlan?.budget_breakdown && (
+                                <div className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <FiZap /> AI RECOMMENDED
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <div>
                                 <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-gray-500">Price Range</span>
-                                    <span className="font-medium text-indigo-600">${budget[0]} - ${budget[1]}</span>
+                                    <span className="text-gray-500">Allocated Budget</span>
+                                    <span className="font-bold text-indigo-600">
+                                        ₹{aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.amount?.toLocaleString() ||
+                                            aiPlan?.budget_breakdown?.[activeTab]?.amount?.toLocaleString() ||
+                                            (totalBudget * 0.25).toLocaleString()}
+                                    </span>
                                 </div>
-                                <input type="range" className="w-full accent-indigo-600" />
-                                {/* Dual slider would be better, using simple input for mock */}
+                                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                    <div
+                                        className="bg-indigo-600 h-full transition-all duration-1000"
+                                        style={{ width: `${aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.percent || aiPlan?.budget_breakdown?.[activeTab]?.percent || 25}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2 italic">
+                                    *AI distributed {aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.percent || aiPlan?.budget_breakdown?.[activeTab]?.percent || 25}% of your total budget here.
+                                </p>
                             </div>
                             <div>
                                 <div className="flex justify-between text-sm mb-2">
                                     <span className="text-gray-500">Guest Capacity</span>
                                     <span className="font-medium text-indigo-600">{initialState.eventData.guests} Guests</span>
                                 </div>
-                                <input type="range" className="w-full accent-indigo-600" defaultValue={initialState.eventData.guests} max="1000" />
+                                <input type="range" className="w-full accent-indigo-600" defaultValue={initialState.eventData.guests} max="1000" disabled />
                             </div>
                         </div>
                     </div>
@@ -130,18 +219,27 @@ const PlanEvent = () => {
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6">
                                 {products?.map((product) => {
-                                    const isSelected = selectedItems.find(i => i.id === product.id);
+                                    const selectedItem = selectedItems.find(i => i.id === product.id);
+                                    const isSelected = !!selectedItem;
+                                    const isAiPick = selectedItem?.is_ai_pick || (aiPlan?.plan?.find(p => p.recommended_product?.id === product.id)?.ai_pick);
+                                    const aiReason = selectedItem?.ai_reason || (aiPlan?.plan?.find(p => p.recommended_product?.id === product.id)?.reason);
+
                                     return (
                                         <div key={product.id} className={`bg-white rounded-2xl p-4 shadow-sm border transition-all hover:shadow-md ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-gray-100'}`}>
                                             {/* Product Image */}
                                             {product.image && (
-                                                <div className="mb-4 rounded-xl overflow-hidden h-48 bg-gray-100">
+                                                <div className="mb-4 rounded-xl overflow-hidden h-48 bg-gray-100 relative">
                                                     <img
                                                         src={product.image.startsWith('http') ? product.image : `http://localhost:8003${product.image}`}
                                                         alt={product.name}
                                                         className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                                                         onClick={() => navigate(`/products/${product.id}`)}
                                                     />
+                                                    {isAiPick && (
+                                                        <div className="absolute top-3 left-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-lg">
+                                                            <FiZap className="fill-current" /> AI RECOMMENDED
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
@@ -160,8 +258,15 @@ const PlanEvent = () => {
                                                 </div>
                                             </div>
 
+                                            {isAiPick && aiReason && (
+                                                <div className="mb-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100 italic text-xs text-indigo-700 leading-relaxed flex gap-2">
+                                                    <FiCheckCircle className="flex-shrink-0 mt-0.5" />
+                                                    "{aiReason}"
+                                                </div>
+                                            )}
+
                                             <div className="font-bold text-2xl text-indigo-900 mb-1">
-                                                ${parseFloat(product.price).toLocaleString()} <span className="text-sm text-gray-400 font-normal">/ event</span>
+                                                ₹{parseFloat(product.price).toLocaleString()} <span className="text-sm text-gray-400 font-normal">/ event</span>
                                             </div>
 
                                             {parseInt(product.price) > remaining && !isSelected && (
@@ -204,7 +309,7 @@ const PlanEvent = () => {
 
                         <div className="flex justify-between items-end mb-2">
                             <span className="text-xs text-gray-500 uppercase font-semibold">Total Budget</span>
-                            <span className="font-bold text-gray-900 text-lg">${totalBudget.toLocaleString()}</span>
+                            <span className="font-bold text-gray-900 text-lg">₹{totalBudget.toLocaleString()}</span>
                         </div>
 
                         <div className="mb-6 relative h-48">
@@ -230,7 +335,7 @@ const PlanEvent = () => {
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-xs text-gray-400">Remaining</span>
                                 <span className={`text-xl font-bold ${remaining < 0 ? 'text-red-500' : 'text-green-500'}`}>
-                                    ${remaining.toLocaleString()}
+                                    ₹{remaining.toLocaleString()}
                                 </span>
                             </div>
                         </div>
@@ -241,19 +346,19 @@ const PlanEvent = () => {
                                     <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
                                     <span className="text-gray-600">Selected Total</span>
                                 </div>
-                                <span className="font-semibold">${selectedTotal.toLocaleString()}</span>
+                                <span className="font-semibold text-gray-900">₹{selectedTotal.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 rounded-full bg-gray-200"></span>
                                     <span className="text-gray-600">Remaining</span>
                                 </div>
-                                <span className="font-semibold text-gray-500">${remaining.toLocaleString()}</span>
+                                <span className="font-semibold text-gray-500">₹{remaining.toLocaleString()}</span>
                             </div>
                         </div>
 
                         <button
-                            onClick={() => navigate("/checkout", { state: { selectedItems, eventData: initialState.eventData, totalBudget } })}
+                            onClick={() => navigate("/checkout", { state: { selectedItems, eventData: initialState.eventData, totalBudget, masterOrderId } })}
                             className="w-full mt-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                         >
                             Review & Book

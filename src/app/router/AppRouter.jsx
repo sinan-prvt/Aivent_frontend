@@ -10,6 +10,7 @@ import ProductDetail from "../../modules/user/pages/ProductDetail";
 import Login from "../../modules/auth/pages/Login";
 import Register from "../../modules/auth/pages/Register";
 import Profile from "@/modules/user/pages/Profile";
+import MyOrdersPage from "../../modules/user/pages/MyOrdersPage";
 import PlanEvent from "../../modules/user/pages/PlanEvent";
 import MagicPlanner from "../../modules/user/pages/MagicPlanner";
 import About from "../../modules/user/pages/About";
@@ -29,6 +30,7 @@ import MicrosoftCallback from "../../modules/auth/pages/MicrosoftCallback";
 
 /* Admin */
 import AdminDashboard from "../../modules/admin/pages/AdminDashboard";
+import AdminPaymentsPage from "../../modules/admin/pages/AdminPaymentsPage";
 import VendorApply from "../../modules/vendor/pages/VendorApply";
 import VendorMFASetup from "../../modules/vendor/pages/VendorMFASetup.jsx";
 import VendorVerifyOTP from "../../modules/vendor/pages/VendorVerifyOTP";
@@ -123,6 +125,7 @@ import PhotographyPackages from "../../modules/vendor/pages/photography/Photogra
 import PhotographyDeliveryCenter from "../../modules/vendor/pages/photography/PhotographyDeliveryCenter.jsx";
 import PhotographySchedule from "../../modules/vendor/pages/photography/PhotographySchedule.jsx";
 import VendorPackagesDispatcher from "../../modules/vendor/pages/VendorPackagesDispatcher.jsx";
+import VendorBookingsDispatcher from "../../modules/vendor/pages/VendorBookingsDispatcher.jsx";
 import NotificationsPage from "../../modules/vendor/pages/NotificationsPage";
 import { VendorScheduleDispatcher, VendorEquipmentDispatcher } from "../../modules/vendor/pages/VendorDispatchers.jsx";
 
@@ -170,6 +173,14 @@ export default function AppRouter() {
           }
         />
         <Route
+          path="/my-orders"
+          element={
+            <PrivateRoute>
+              <MyOrdersPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/dashboard/plan"
           element={
             <PrivateRoute>
@@ -201,7 +212,11 @@ export default function AppRouter() {
         path="/admin/*"
         element={
           <PrivateRoute role="admin">
-            <AdminDashboard />
+            <Routes>
+              <Route index element={<AdminDashboard />} />
+              <Route path="payments" element={<AdminPaymentsPage />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Routes>
           </PrivateRoute>
         }
       />
@@ -259,7 +274,7 @@ export default function AppRouter() {
 
           {/* Catering Specific Routes */}
           <Route path="menus" element={<MenuBuilder />} />
-          <Route path="bookings" element={<CateringBookings />} />
+          <Route path="bookings" element={<VendorBookingsDispatcher />} />
 
           {/* Decoration Specific Routes */}
           <Route path="inventory" element={<DecorInventory />} />

@@ -178,6 +178,12 @@ export default function VendorLayout() {
                 label="Schedule"
                 active={pathname.includes("/schedule")}
               />
+              <SidebarItem
+                to={`${basePath}/bookings`}
+                icon={FiCalendar}
+                label="Bookings"
+                active={pathname.includes("/bookings")}
+              />
             </>
           ) : catId === "4" ? (
             <>
@@ -201,6 +207,12 @@ export default function VendorLayout() {
                 active={pathname.includes("/delivery")}
               />
               <SidebarItem
+                to={`${basePath}/bookings`}
+                icon={FiCalendar}
+                label="Bookings"
+                active={pathname.includes("/bookings") && !pathname.includes("/delivery")}
+              />
+              <SidebarItem
                 to={`${basePath}/schedule`}
                 icon={FiCalendar}
                 label="Schedule"
@@ -221,6 +233,12 @@ export default function VendorLayout() {
                 icon={FiBox}
                 label={config.products}
                 active={pathname.includes("/products")}
+              />
+              <SidebarItem
+                to={`${basePath}/bookings`}
+                icon={FiCalendar}
+                label="Bookings"
+                active={pathname.includes("/bookings")}
               />
             </>
           )}

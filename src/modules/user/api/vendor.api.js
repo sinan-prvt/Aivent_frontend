@@ -54,7 +54,7 @@ vendorApi.interceptors.response.use(
 );
 
 export const getPublicVendorDetail = async (userId) => {
-    const response = await vendorApi.get(`/vendor/public/vendors/${userId}/`);
+    const response = await vendorApi.get(`/vendors/public/vendors/${userId}/`);
     return response.data;
 };
 

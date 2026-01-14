@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import Navbar from "../../../components/layout/Navbar";
 import { useAuth } from "../../../app/providers/AuthProvider";
@@ -17,7 +17,8 @@ export default function Home() {
   const [eventData, setEventData] = useState({
     eventType: "Corporate Conference",
     budget: "",
-    guests: ""
+    guests: "",
+    eventDate: ""
   });
   const [errors, setErrors] = useState({});
   const [isScrolled, setIsScrolled] = useState(false);
@@ -97,6 +98,9 @@ export default function Home() {
     if (!eventData.guests || parseInt(eventData.guests) <= 0) {
       newErrors.guests = "Please enter number of guests";
     }
+    if (!eventData.eventDate) {
+      newErrors.eventDate = "Please select an event date";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -116,24 +120,24 @@ export default function Home() {
     }
   };
 
+  const { state: locationState } = useLocation();
+  const isSwap = locationState?.isSwap;
+  const existingMasterOrderId = locationState?.masterOrderId;
+
   const handleGeneratePlan = () => {
     setShowCategoriesModal(false);
-    // Remove setSelectedCategories([]) to preserve state for navigation
+
+    const navigationState = {
+      eventData,
+      categories: selectedCategories,
+      masterOrderId: existingMasterOrderId,
+      isSwap: isSwap
+    };
 
     if (user) {
-      navigate("/dashboard/plan", {
-        state: {
-          eventData,
-          categories: selectedCategories
-        }
-      });
+      navigate("/dashboard/plan", { state: navigationState });
     } else {
-      navigate("/register", {
-        state: {
-          eventData,
-          categories: selectedCategories
-        }
-      });
+      navigate("/register", { state: navigationState });
     }
   };
 
@@ -344,6 +348,16 @@ export default function Home() {
                               placeholder="100"
                               value={eventData.guests}
                               onChange={(e) => setEventData({ ...eventData, guests: e.target.value })}
+                            />
+                          </div>
+
+                          <div className="flex flex-col col-span-full md:col-span-1">
+                            <label className="text-gray-700 font-semibold mb-2">Event Date</label>
+                            <input
+                              type="date"
+                              className="border-2 border-gray-300 rounded-xl px-4 py-3 w-full focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition mb-6"
+                              value={eventData.eventDate}
+                              onChange={(e) => setEventData({ ...eventData, eventDate: e.target.value })}
                             />
                           </div>
                         </div>
