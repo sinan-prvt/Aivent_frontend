@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
 import { useAuth } from '../../../../app/providers/AuthProvider';
+import BookingCustomerDetails from '../../components/BookingCustomerDetails';
 
 export default function CateringBookings() {
     const { user } = useAuth();
@@ -197,6 +198,8 @@ export default function CateringBookings() {
                                 <p><strong>Payment Status:</strong> {selectedBooking.status}</p>
                             </div>
                         </div>
+
+                        <BookingCustomerDetails userId={selectedBooking.booking_user_id} bookingDetails={selectedBooking.booking_details} />
 
                         {/* Dummy data for sections not yet in API */}
                         <div className="bg-gray-50 rounded-xl p-4">

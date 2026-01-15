@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
+import BookingCustomerDetails from '../../components/BookingCustomerDetails';
 
 export default function LightingBookings() {
     const [bookings, setBookings] = useState([]);
@@ -126,6 +127,8 @@ export default function LightingBookings() {
                             </button>
                         </div>
                     )}
+
+                    <BookingCustomerDetails userId={selectedBooking.booking_user_id} />
                 </div>
             )}
         </div>

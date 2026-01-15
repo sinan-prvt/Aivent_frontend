@@ -24,31 +24,53 @@ const PlanEvent = () => {
 
     const [activeTab, setActiveTab] = useState(initialState.categories[0] || "Venue");
     const [budget, setBudget] = useState([2000, 8500]); // Mock range
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItems, setSelectedItems] = useState(initialState.selectedItems || []);
     const [chatProduct, setChatProduct] = useState(null);
-    const [aiPlan, setAiPlan] = useState(null);
+    const [aiPlan, setAiPlan] = useState(initialState.aiPlan || null);
     const [isGenerating, setIsGenerating] = useState(false);
 
     // Fetch AI Plan if eventData is available
     React.useEffect(() => {
         const fetchAiPlan = async () => {
-            if (initialState.eventData?.budget) {
+            if (initialState.eventData?.budget && !aiPlan) {
                 setIsGenerating(true);
                 try {
-                    const prompt = `Plan a ${initialState.eventData.eventType} for ${initialState.eventData.guests} guests with a budget of ${initialState.eventData.budget} INR.`;
+                    const categoriesList = initialState.categories.join(", ");
+                    const prompt = `Plan a ${initialState.eventData.eventType} for ${initialState.eventData.guests} guests with a budget of ${initialState.eventData.budget} INR. strictly restrict recommendations to these categories: ${categoriesList}.`;
                     const result = await generatePlan(prompt, {
                         event_type: initialState.eventData.eventType,
                         budget: initialState.eventData.budget,
-                        guests: parseInt(initialState.eventData.guests)
+                        guests: parseInt(initialState.eventData.guests),
+                        categories: initialState.categories
                     });
 
                     setAiPlan(result);
 
-                    // Auto-select AI recommended products
+                    let recommendedProducts = [];
                     if (result.plan) {
-                        const recommendedProducts = result.plan
+                        // Backend already filters by selected categories, so we trust its output
+                        recommendedProducts = result.plan
                             .filter(item => item.recommended && item.recommended_product)
-                            .map(item => ({ ...item.recommended_product, ai_reason: item.reason, is_ai_pick: true }));
+                            .map(item => ({
+                                ...item.recommended_product,
+                                ai_reason: item.reason,
+                                is_ai_pick: true
+                            }));
+
+                        console.log("[AI Plan] Recommended products:", recommendedProducts);
+                    }
+
+                    // Persist the generated plan and initial selection in history state
+                    navigate(".", {
+                        replace: true,
+                        state: {
+                            ...initialState,
+                            aiPlan: result,
+                            selectedItems: recommendedProducts
+                        }
+                    });
+
+                    if (recommendedProducts.length > 0) {
                         setSelectedItems(recommendedProducts);
                     }
                 } catch (error) {
@@ -57,9 +79,18 @@ const PlanEvent = () => {
                 } finally {
                     setIsGenerating(false);
                 }
+            } else if (aiPlan && !selectedItems.length) {
+                // Restore selected items if plan exists but selection is empty (optional, but good for consistency)
+                if (aiPlan.plan) {
+                    const recommendedProducts = aiPlan.plan
+                        .filter(item => item.recommended && item.recommended_product)
+                        .map(item => ({ ...item.recommended_product, ai_reason: item.reason, is_ai_pick: true }));
+                    setSelectedItems(recommendedProducts);
+                }
             }
         };
         fetchAiPlan();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Fetch Categories
@@ -77,6 +108,23 @@ const PlanEvent = () => {
         enabled: !!activeCategoryId, // Only fetch if we have a category ID
     });
 
+    // Mapping frontend display names to backend service keys
+    const CATEGORY_MAPPING = {
+        "Venue": "venue",
+        "Catering & Food": "catering",
+        "Decoration & Styling": "decoration",
+        "Photography & Video": "photography",
+        "Sound & Music": "dj",
+        "Lighting & Effects": "lighting",
+        "Catering": "catering",
+        "Decoration": "decoration",
+        "Photography": "photography",
+        "Sound": "dj",
+        "Lighting": "lighting"
+    };
+
+    const aiKey = CATEGORY_MAPPING[activeTab] || activeTab.toLowerCase();
+
     // Calculate Budget Stats
     const totalBudget = parseInt(initialState.eventData.budget) || 20000;
     const selectedTotal = selectedItems.reduce((acc, item) => acc + parseFloat(item.price), 0);
@@ -89,8 +137,8 @@ const PlanEvent = () => {
     const COLORS = ["#6366f1", "#e5e7eb"]; // Indigo-500, Gray-200
 
     const handleSelect = (product) => {
-        if (selectedItems.find((i) => i.id === product.id)) {
-            setSelectedItems(selectedItems.filter((i) => i.id !== product.id));
+        if (selectedItems.find((i) => String(i.id) === String(product.id))) {
+            setSelectedItems(selectedItems.filter((i) => String(i.id) !== String(product.id)));
         } else {
             setSelectedItems([...selectedItems, product]);
         }
@@ -183,19 +231,19 @@ const PlanEvent = () => {
                                 <div className="flex justify-between text-sm mb-2">
                                     <span className="text-gray-500">Allocated Budget</span>
                                     <span className="font-bold text-indigo-600">
-                                        ₹{aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.amount?.toLocaleString() ||
-                                            aiPlan?.budget_breakdown?.[activeTab]?.amount?.toLocaleString() ||
-                                            (totalBudget * 0.25).toLocaleString()}
+                                        ₹{aiPlan?.budget_breakdown?.[aiKey]
+                                            ? aiPlan.budget_breakdown[aiKey].amount?.toLocaleString()
+                                            : (totalBudget * 0.25).toLocaleString()}
                                     </span>
                                 </div>
                                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                                     <div
                                         className="bg-indigo-600 h-full transition-all duration-1000"
-                                        style={{ width: `${aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.percent || aiPlan?.budget_breakdown?.[activeTab]?.percent || 25}%` }}
+                                        style={{ width: `${aiPlan?.budget_breakdown?.[aiKey]?.percent ?? 25}%` }}
                                     ></div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 mt-2 italic">
-                                    *AI distributed {aiPlan?.budget_breakdown?.[activeTab.toLowerCase()]?.percent || aiPlan?.budget_breakdown?.[activeTab]?.percent || 25}% of your total budget here.
+                                    *AI distributed {aiPlan?.budget_breakdown?.[aiKey]?.percent ?? 25}% of your total budget here.
                                 </p>
                             </div>
                             <div>
@@ -219,10 +267,10 @@ const PlanEvent = () => {
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6">
                                 {products?.map((product) => {
-                                    const selectedItem = selectedItems.find(i => i.id === product.id);
+                                    const selectedItem = selectedItems.find(i => String(i.id) === String(product.id));
                                     const isSelected = !!selectedItem;
-                                    const isAiPick = selectedItem?.is_ai_pick || (aiPlan?.plan?.find(p => p.recommended_product?.id === product.id)?.ai_pick);
-                                    const aiReason = selectedItem?.ai_reason || (aiPlan?.plan?.find(p => p.recommended_product?.id === product.id)?.reason);
+                                    const isAiPick = selectedItem?.is_ai_pick || (aiPlan?.plan?.find(p => String(p.recommended_product?.id) === String(product.id))?.ai_pick);
+                                    const aiReason = selectedItem?.ai_reason || (aiPlan?.plan?.find(p => String(p.recommended_product?.id) === String(product.id))?.reason);
 
                                     return (
                                         <div key={product.id} className={`bg-white rounded-2xl p-4 shadow-sm border transition-all hover:shadow-md ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-gray-100'}`}>
@@ -230,7 +278,13 @@ const PlanEvent = () => {
                                             {product.image && (
                                                 <div className="mb-4 rounded-xl overflow-hidden h-48 bg-gray-100 relative">
                                                     <img
-                                                        src={product.image.startsWith('http') ? product.image : `http://localhost:8003${product.image}`}
+                                                        src={
+                                                            product.image?.startsWith('http')
+                                                                ? product.image
+                                                                : product.image?.startsWith('/media/')
+                                                                    ? `http://localhost:8003${product.image}`
+                                                                    : `http://localhost:8003/media/${product.image}`
+                                                        }
                                                         alt={product.name}
                                                         className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
                                                         onClick={() => navigate(`/products/${product.id}`)}

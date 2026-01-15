@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle, FiCalendar } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
 import { useAuth } from '../../../../app/providers/AuthProvider';
+import BookingCustomerDetails from '../../components/BookingCustomerDetails';
 
 export default function SoundBookings() {
     const { user } = useAuth();
@@ -229,6 +230,8 @@ export default function SoundBookings() {
                                 </div>
                             </div>
                         </section>
+
+                        <BookingCustomerDetails userId={selectedBooking.booking_user_id} bookingDetails={selectedBooking.booking_details} />
 
                         <div className="p-6 border-2 border-dashed border-gray-100 rounded-3xl">
                             <p className="text-[10px] text-gray-400 font-bold leading-relaxed text-center">

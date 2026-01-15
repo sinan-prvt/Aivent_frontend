@@ -64,6 +64,18 @@ export async function resetPassword(email, new_password) {
   return instance.post("reset-password/", { email, new_password });
 }
 
+import { getAccessToken } from '../../../core/utils/token';
+
 export async function logout(refreshToken) {
   return instance.post("logout/", { refresh: refreshToken });
+}
+
+export async function getCustomerProfile(userId) {
+  const token = getAccessToken();
+  return axios.get(`${API_BASE}/api/users/profiles/${userId}/`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
 }

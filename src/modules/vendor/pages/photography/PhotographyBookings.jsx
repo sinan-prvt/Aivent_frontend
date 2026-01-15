@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
+import BookingCustomerDetails from '../../components/BookingCustomerDetails';
 
 export default function PhotographyBookings() {
     const [bookings, setBookings] = useState([]);
@@ -195,6 +196,8 @@ export default function PhotographyBookings() {
                                 <p><strong>Payment Status:</strong> {selectedBooking.status}</p>
                             </div>
                         </div>
+
+                        <BookingCustomerDetails userId={selectedBooking.booking_user_id} bookingDetails={selectedBooking.booking_details} />
 
                         <div className="bg-gray-50 rounded-xl p-4">
                             <h3 className="font-bold text-gray-900 text-sm mb-3">Client Notes</h3>

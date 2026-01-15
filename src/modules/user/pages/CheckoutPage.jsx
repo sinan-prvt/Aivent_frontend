@@ -20,7 +20,9 @@ const CheckoutPage = () => {
         fullName: "",
         email: "",
         phone: "",
-        city: ""
+        city: "",
+        address: "",
+        notes: ""
     });
     React.useEffect(() => {
         const fetchNames = async () => {
@@ -106,7 +108,16 @@ const CheckoutPage = () => {
                     guests: String(eventData.guests || "N/A"),
                     event_date: eventData.eventDate || new Date().toISOString().split('T')[0],
                     amount: parseFloat(item.price).toFixed(2),
-                    master_order_id: masterOrderId // Pass this to group items into one order
+                    amount: parseFloat(item.price).toFixed(2),
+                    master_order_id: masterOrderId, // Pass this to group items into one order
+
+                    // Add Booking Customer Details
+                    customer_name: userDetails.fullName,
+                    customer_email: userDetails.email,
+                    customer_phone: userDetails.phone,
+                    customer_address: userDetails.address,
+                    customer_city: userDetails.city,
+                    customer_notes: userDetails.notes
                 };
 
                 console.log(`Processing booking ${i + 1}/${selectedItems.length}:`, bookingData);

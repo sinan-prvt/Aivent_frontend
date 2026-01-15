@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
+import BookingCustomerDetails from '../../components/BookingCustomerDetails';
 
 export default function DecorBookings() {
     const [bookings, setBookings] = useState([]);
@@ -144,6 +145,8 @@ export default function DecorBookings() {
                             <p className="mb-2"><strong>Event Type:</strong> {selectedBooking.booking_details?.event_type}</p>
                             <p><strong>Date:</strong> {selectedBooking.booking_details?.date}</p>
                         </div>
+
+                        <BookingCustomerDetails userId={selectedBooking.booking_user_id} bookingDetails={selectedBooking.booking_details} />
                     </div>
                 </div>
             )}
