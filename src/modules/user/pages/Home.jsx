@@ -123,6 +123,24 @@ export default function Home() {
   const { state: locationState } = useLocation();
   const isSwap = locationState?.isSwap;
   const existingMasterOrderId = locationState?.masterOrderId;
+  const preSelectedEventType = locationState?.preSelectedEventType;
+
+  useEffect(() => {
+    if (preSelectedEventType) {
+      setEventData(prev => ({ ...prev, eventType: preSelectedEventType }));
+    }
+    
+    // Handle scroll to hash
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [preSelectedEventType]);
 
   const handleGeneratePlan = () => {
     setShowCategoriesModal(false);
@@ -314,13 +332,12 @@ export default function Home() {
                               value={eventData.eventType}
                               onChange={(e) => setEventData({ ...eventData, eventType: e.target.value })}
                             >
-                              <option>Corporate Conference</option>
-                              <option>Product Launch</option>
-                              <option>Executive Retreat</option>
-                              <option>Award Ceremony</option>
-                              <option>Board Meeting</option>
-                              <option>Client Summit</option>
-                              <option>Wedding</option>
+                              <option>Corporate</option>
+                              <option>Weddings</option>
+                              <option>Social Gatherings</option>
+                              <option>Concerts & Performing Arts</option>
+                              <option>Fashion & Lifestyle</option>
+                              <option>Charity & Galas</option>
                               <option>Birthday</option>
                               <option>Festival</option>
                             </select>

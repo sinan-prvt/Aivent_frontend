@@ -1,178 +1,214 @@
 
 import React from "react";
 import Navbar from "../../../components/layout/Navbar";
-import { FiTarget, FiUsers, FiAward, FiHeart, FiArrowRight } from "react-icons/fi";
+import { FiTarget, FiUsers, FiAward, FiHeart, FiArrowRight, FiCheckCircle, FiDollarSign, FiSearch } from "react-icons/fi";
 import { HiOutlineSparkles, HiOutlineLightningBolt } from "react-icons/hi";
 
 export default function About() {
     const stats = [
-        { label: "Events Managed", value: "10k+" },
-        { label: "Trusted Vendors", value: "2,500+" },
-        { label: "Happy Clients", value: "98%" },
-        { label: "Cities Covered", value: "50+" },
+        { label: "Visionary Dreams", value: "Realized" },
+        { label: "Budget Control", value: "100%" },
+        { label: "Happy Clients", value: "99%" },
+        { label: "Grand Celebrations", value: "Unlimited" },
     ];
 
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-900">
+        <div className="min-h-screen bg-[#fafafa] font-sans text-gray-900">
             <Navbar />
 
             {/* Hero Section */}
-            <div className="relative pt-32 pb-20 px-6 overflow-hidden">
+            <div className="relative pt-32 pb-24 px-6 overflow-hidden">
                 <div className="max-w-6xl mx-auto text-center relative z-10">
                     <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-blue-100 uppercase tracking-wider">
-                        Our Story
+                        Born from Experience
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter text-gray-900">
-                        We Orchestrate <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">Unforgettable Moments.</span>
+                    <h1 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter text-gray-900 leading-[0.9]">
+                        The Story Behind <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">Aivent.</span>
                     </h1>
                     <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
-                        Aivent isn't just a platform; it's the invisible engine behind the world's most spectacular events. We bridge the gap between visionary planners and master executors.
+                        How a single catering service transformed into a mission to democratize grand celebrations for everyone, regardless of budget.
                     </p>
                 </div>
 
                 {/* Abstract Background Elements */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl -z-0 pointer-events-none">
-                    <div className="absolute top-20 right-0 w-96 h-96 bg-purple-100 rounded-full blur-3xl opacity-50 mix-blend-multiply animate-pulse"></div>
-                    <div className="absolute top-40 left-0 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50 mix-blend-multiply animate-pulse delay-700"></div>
+                    <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-purple-100/50 rounded-full blur-[120px] mix-blend-multiply animate-pulse"></div>
+                    <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-[120px] mix-blend-multiply animate-pulse delay-700"></div>
                 </div>
             </div>
 
-            {/* Image Grid */}
+            {/* The Roots Section */}
             <div className="max-w-7xl mx-auto px-6 mb-32">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 h-96">
-                    <div className="col-span-2 row-span-2 rounded-3xl overflow-hidden relative shadow-2xl group">
-                        <img src="/images/ai_event_stage.png" className="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="Event Crowd" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                            <p className="text-white font-bold text-lg">Spectacular Gatherings</p>
+                <div className="grid md:grid-cols-2 gap-16 items-center">
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[2rem] opacity-20 blur-2xl group-hover:opacity-30 transition duration-700"></div>
+                        <img
+                            src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=2070&auto=format&fit=crop"
+                            className="relative w-full h-[500px] object-cover rounded-[2rem] shadow-2xl"
+                            alt="Catering Hospitality"
+                        />
+                        <div className="absolute bottom-8 left-8 right-8 p-6 glass border border-white/20 rounded-2xl">
+                            <p className="text-white font-semibold text-lg italic">"It all started in the heat of a kitchen, serving smiles and realizing dreams."</p>
                         </div>
                     </div>
-                    <div className="rounded-3xl overflow-hidden relative shadow-lg group">
-                        <img src="/images/luxury_venue.png" className="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="Detailing" />
-                    </div>
-                    <div className="rounded-3xl overflow-hidden relative shadow-lg group">
-                        <img src="/images/corporate_conference.png" className="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="Conference" />
-                    </div>
-                    <div className="rounded-3xl overflow-hidden relative shadow-lg group">
-                        <img src="/images/ai_network_abstract.png" className="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="Style" />
-                    </div>
-                    <div className="rounded-3xl overflow-hidden relative shadow-lg group">
-                        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop" className="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="Teamwork" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Stats Section */}
-            <div className="bg-gray-50 py-20 border-y border-gray-100">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="space-y-2">
-                                <p className="text-4xl md:text-5xl font-black text-indigo-600">{stat.value}</p>
-                                <p className="text-gray-500 font-bold uppercase tracking-wider text-xs">{stat.label}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Mission & Values */}
-            <div className="py-32 px-6">
-                <div className="max-w-6xl mx-auto">
-                    <div className="grid md:grid-cols-2 gap-16 items-center">
+                    <div className="space-y-8">
                         <div>
-                            <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-indigo-100 uppercase tracking-wider">
-                                Our Mission
-                            </div>
-                            <h2 className="text-4xl font-bold mb-6 text-gray-900">Empowering Creativity with Intelligent Logistics.</h2>
-                            <div className="space-y-6 text-lg text-gray-600">
-                                <p>
-                                    We believe that planning an event should be as joyful as the event itself. By harnessing the power of AI, we eliminate the friction of logistics, finding the perfect vendors, and managing budgets.
-                                </p>
-                                <p>
-                                    Our platform is designed for the modern planner—whether you're organizing a corporate summit for thousands or an intimate wedding for close family. We provide the tools to make it perfect.
-                                </p>
-                            </div>
-
-                            <div className="mt-10 grid grid-cols-2 gap-6">
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                                        <FiTarget className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Precision Matching</h4>
-                                        <p className="text-sm text-gray-500">AI-driven vendor recommendations.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-                                        <FiHeart className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Curated Quality</h4>
-                                        <p className="text-sm text-gray-500">Only the top 1% of vendors.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                                        <HiOutlineLightningBolt className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Lightning Fast</h4>
-                                        <p className="text-sm text-gray-500">From idea to plan in minutes.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-                                        <FiAward className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Award Winning</h4>
-                                        <p className="text-sm text-gray-500">Recognized industry leader.</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 className="text-4xl font-black mb-6 tracking-tight">Where it all began.</h2>
+                            <p className="text-lg text-gray-600 leading-relaxed">
+                                When I first started my catering service, I didn't just see guests being served; I saw families trying to create memories. Through countless interactions with clients, a pattern emerged—one that moved me deeply.
+                            </p>
                         </div>
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-3xl transform rotate-3"></div>
-                            <img
-                                src="https://images.unsplash.com/photo-1551818255-e6e10975bc17?q=80&w=1973&auto=format&fit=crop"
-                                alt="Workspace"
-                                className="relative rounded-3xl shadow-2xl transform -rotate-2 hover:rotate-0 transition duration-500"
-                            />
+                        <div className="grid gap-6">
+                            <div className="flex gap-4 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
+                                    <FiUsers className="w-6" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold">Deep Connections</h4>
+                                    <p className="text-gray-500 text-sm">Talking to hundreds of clients revealed the true pain of event planning.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 shrink-0">
+                                    <HiOutlineSparkles className="w-6" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold">The Vision Gap</h4>
+                                    <p className="text-gray-500 text-sm">Everyone wanted a "grand" celebration, but many had no roadmap to get there.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* CTA */}
-            <div className="bg-gray-900 py-24 px-6 text-center text-white">
-                <div className="max-w-4xl mx-auto">
-                    <HiOutlineSparkles className="w-12 h-12 text-yellow-400 mx-auto mb-6" />
-                    <h2 className="text-4xl md:text-5xl font-black mb-8">Ready to create something extraordinary?</h2>
-                    <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">Join thousands of planners and vendors who trust Aivent to bring their visions to life.</p>
-                    <div className="flex flex-col md:flex-row gap-4 justify-center">
-                        <a href="/register" className="px-8 py-4 bg-white text-gray-900 rounded-xl font-bold text-lg hover:bg-gray-100 transition shadow-lg flex items-center justify-center gap-2">
-                            Start Planning Free <FiArrowRight />
-                        </a>
-                        <a href="/vendor/apply" className="px-8 py-4 bg-transparent border-2 border-gray-700 text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition flex items-center justify-center gap-2">
-                            Join as Vendor
+            {/* The Problem Grid */}
+            <div className="bg-gray-900 py-32 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/10 blur-[150px] pointer-events-none"></div>
+                <div className="max-w-6xl mx-auto px-6 relative z-10">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-5xl font-black text-white mb-6">The Challenges I Witnessed</h2>
+                        <p className="text-gray-400 max-w-2xl mx-auto text-lg font-medium">
+                            I saw clients struggling with issues that shouldn't exist in a world of celebrations.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        <div className="bg-gray-800/50 p-10 rounded-[2.5rem] border border-gray-700 backdrop-blur-sm hover:border-gray-500 transition group">
+                            <div className="w-14 h-14 bg-red-500/10 text-red-500 rounded-[1.25rem] flex items-center justify-center mb-8 group-hover:scale-110 transition">
+                                <FiSearch className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-4">Random Planning</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                Most clients had no idea how to plan or what to do next. They settled for the nearest known manager, even if they weren't satisfied.
+                            </p>
+                        </div>
+
+                        <div className="bg-gray-800/50 p-10 rounded-[2.5rem] border border-blue-500/30 backdrop-blur-sm hover:border-blue-400 transition group">
+                            <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-[1.25rem] flex items-center justify-center mb-8 group-hover:scale-110 transition">
+                                <FiDollarSign className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-4">The Budget Shyness</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                Clients with fixed budgets often felt shy to ask about costs for every single detail. They felt restricted by their financial boundaries.
+                            </p>
+                        </div>
+
+                        <div className="bg-gray-800/50 p-10 rounded-[2.5rem] border border-gray-700 backdrop-blur-sm hover:border-gray-500 transition group">
+                            <div className="w-14 h-14 bg-green-500/10 text-green-500 rounded-[1.25rem] flex items-center justify-center mb-8 group-hover:scale-110 transition">
+                                <FiCheckCircle className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-4">Lack of Satisfaction</h3>
+                            <p className="text-gray-400 leading-relaxed">
+                                Traditional event management often failed to deliver the "Grand" feel that clients dreamed of within their specific budget.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* The Pivot Section */}
+            <div className="py-32 px-6">
+                <div className="max-w-6xl mx-auto bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                    <div className="relative z-10 grid md:grid-cols-2 gap-16 items-center">
+                        <div className="space-y-8">
+                            <h2 className="text-4xl md:text-5xl font-black leading-tight">"Why not create a platform to solve these problems?"</h2>
+                            <p className="text-indigo-100 text-xl leading-relaxed font-medium">
+                                That single thought started it all. Aivent was born to bridge the gap between grand aspirations and real-world budgets, taking the shyness out of the equation and putting the power back into the client's hands.
+                            </p>
+                            <div className="flex gap-4">
+                                <div className="px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-sm font-bold tracking-widest uppercase">The Solution</div>
+                                <div className="px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-sm font-bold tracking-widest uppercase">The Future</div>
+                            </div>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/20">
+                                <h4 className="text-2xl font-bold mb-4">Still in the Making...</h4>
+                                <p className="text-indigo-100 leading-relaxed">
+                                    We haven't fully launched yet, but our vision is clear. We are building the most intuitive, budget-conscious, and grand event planning experience ever created.
+                                </p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-6">
+                                {stats.map((stat, index) => (
+                                    <div key={index} className="text-center">
+                                        <p className="text-3xl font-black">{stat.value}</p>
+                                        <p className="text-indigo-200 text-sm font-bold uppercase tracking-widest">{stat.label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mission Re-imagined */}
+            <div className="pb-32 px-6">
+                <div className="max-w-4xl mx-auto text-center space-y-10">
+                    <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-bold border border-indigo-100 uppercase tracking-wider">
+                        Our Mission
+                    </div>
+                    <h2 className="text-5xl font-black text-gray-900 tracking-tight">Grandeur within Reach.</h2>
+                    <p className="text-2xl text-gray-600 leading-relaxed font-medium italic">
+                        "Your budget shouldn't limit your imagination. Our AI ensures that every penny works toward making your event grand, transparently and effortlessly."
+                    </p>
+                    <div className="flex justify-center pt-8">
+                        <a href="/register" className="group relative px-10 py-5 bg-gray-900 text-white rounded-2xl font-bold text-xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl">
+                            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                            <span className="relative flex items-center justify-center gap-3">
+                                Start Your Journey <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            {/* Footer (Simplified for brevity, usually imported) */}
-            <footer className="bg-gray-950 text-gray-500 py-12 px-6 border-t border-gray-900">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p>© 2026 Aivent Inc. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <a href="#" className="hover:text-white transition">Privacy</a>
-                        <a href="#" className="hover:text-white transition">Terms</a>
-                        <a href="#" className="hover:text-white transition">Contact</a>
+            {/* Footer */}
+            <footer className="bg-gray-50 text-gray-400 py-16 px-6 border-t border-gray-100">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-black text-xl">A</span>
+                        </div>
+                        <span className="text-gray-900 font-bold text-xl">Aivent.</span>
+                    </div>
+                    <p className="text-sm">© 2026 Aivent. Building the future of celebrations.</p>
+                    <div className="flex gap-8 text-sm font-bold text-gray-600 uppercase tracking-widest">
+                        <a href="#" className="hover:text-indigo-600 transition">Privacy</a>
+                        <a href="#" className="hover:text-indigo-600 transition">Terms</a>
+                        <a href="#" className="hover:text-indigo-600 transition">Contact</a>
                     </div>
                 </div>
             </footer>
+
+            <style jsx>{`
+                .glass {
+                    background: rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+            `}</style>
         </div>
     );
 }

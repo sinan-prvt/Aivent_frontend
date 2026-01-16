@@ -50,11 +50,9 @@ export default function EventsBrowse() {
     ];
 
     const handleEventClick = (event) => {
-        if (user) {
-            navigate("/magic-planner", { state: { prompt: `Plan a ${event.title}` } });
-        } else {
-            navigate("/login");
-        }
+        // Navigate to home page and scroll to planning section
+        // We pass the event title to pre-fill the form and use hash to scroll
+        navigate("/#create-plan", { state: { preSelectedEventType: event.title } });
     };
 
     return (
