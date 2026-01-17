@@ -34,7 +34,7 @@ export const useScheduleTasks = () => {
     });
 
     return {
-        tasks: tasksQuery.data || [],
+        tasks: tasksQuery.data?.results || (Array.isArray(tasksQuery.data) ? tasksQuery.data : []),
         isLoading: tasksQuery.isLoading,
         isError: tasksQuery.isError,
         createTask: createMutation.mutateAsync,

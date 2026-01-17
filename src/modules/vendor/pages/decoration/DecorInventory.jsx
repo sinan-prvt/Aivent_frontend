@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useVendorProducts } from "../../hooks/useVendorProducts";
 import { useCategories } from "../../../user/hooks/useCategories";
 import { useDeleteProduct } from "../../hooks/useDeleteProduct";
+import Pagination from '@/components/ui/Pagination';
 
 // Internal Modal Component for Vendor Product View
 const ProductViewModal = ({ product, onClose }) => {
@@ -38,11 +39,15 @@ const ProductViewModal = ({ product, onClose }) => {
 
 export default function DecorInventory() {
     const navigate = useNavigate();
-    const { data: products, isLoading: productsLoading } = useVendorProducts();
-    const { data: categories, isLoading: categoriesLoading } = useCategories();
-    const deleteMutation = useDeleteProduct();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const { data: productsData, isLoading: productsLoading } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
+    const { data: categories, isLoading: categoriesLoading } = useCategories();
+    const deleteMutation = useDeleteProduct();
 
     const isLoading = productsLoading || categoriesLoading;
 
@@ -134,8 +139,8 @@ export default function DecorInventory() {
                                 {/* Status Badge */}
                                 <div className="absolute top-3 right-3">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm shadow-sm ${item.status === 'approved' ? 'bg-emerald-500/90 text-white' :
-                                            item.status === 'rejected' ? 'bg-rose-500/90 text-white' :
-                                                'bg-amber-500/90 text-white'
+                                        item.status === 'rejected' ? 'bg-rose-500/90 text-white' :
+                                            'bg-amber-500/90 text-white'
                                         }`}>
                                         {item.status || 'Pending'}
                                     </span>
@@ -189,11 +194,17 @@ export default function DecorInventory() {
             )}
 
             {/* Footer Info */}
-            {inventoryItems.length > 0 && (
-                <div className="text-center py-6">
-                    <p className="text-xs text-gray-400 font-medium">Showing {inventoryItems.length} items</p>
-                </div>
-            )}
+            <div className="flex flex-col items-center gap-4 py-6">
+                {totalCount > 10 && (
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                )}
+                <p className="text-xs text-gray-400 font-medium">Showing {inventoryItems.length} of {totalCount} items</p>
+            </div>
 
             {/* Product View Modal */}
             {selectedProduct && (

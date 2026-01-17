@@ -266,7 +266,7 @@ const PlanEvent = () => {
                             </div>
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6">
-                                {products?.map((product) => {
+                                {(products?.results || products || [])?.map((product) => {
                                     const selectedItem = selectedItems.find(i => String(i.id) === String(product.id));
                                     const isSelected = !!selectedItem;
                                     const isAiPick = selectedItem?.is_ai_pick || (aiPlan?.plan?.find(p => String(p.recommended_product?.id) === String(product.id))?.ai_pick);

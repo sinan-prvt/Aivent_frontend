@@ -39,9 +39,12 @@ export const useLightingData = () => {
 
     // Data Processing
     const profile = profileQuery.data || {};
-    const products = Array.isArray(productsQuery.data) ? productsQuery.data : [];
-    const tasks = tasksQuery.data || [];
-    const techniciansList = techsQuery.data || [];
+    const productsData = productsQuery.data || {};
+    const products = productsData.results || (Array.isArray(productsData) ? productsData : []);
+    const tasksData = tasksQuery.data || {};
+    const tasks = tasksData.results || (Array.isArray(tasksData) ? tasksData : []);
+    const techsData = techsQuery.data || {};
+    const techniciansList = techsData.results || (Array.isArray(techsData) ? techsData : []);
 
     // Calculate Stats
     const stats = {

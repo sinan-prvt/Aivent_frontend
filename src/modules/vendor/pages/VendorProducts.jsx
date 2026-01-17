@@ -1,15 +1,20 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useVendorProducts } from "../hooks/useVendorProducts";
 import { deleteProduct } from "../api/catalog.api"; // Import direct API for delete or use mutation if preferred
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import VendorProductTable from "../components/VendorProductTable";
+import Pagination from '@/components/ui/Pagination';
 import { FiPlus } from "react-icons/fi";
 
 const VendorProducts = () => {
-    const { data: products, isLoading } = useVendorProducts();
+    const [page, setPage] = useState(1);
+    const { data, isLoading } = useVendorProducts(page);
     const queryClient = useQueryClient();
+
+    const products = data?.results || [];
+    const count = data?.count || 0;
 
     const deleteMutation = useMutation({
         mutationFn: deleteProduct,
@@ -46,6 +51,17 @@ const VendorProducts = () => {
                 isLoading={isLoading}
                 onDelete={handleDelete}
             />
+
+            {!isLoading && count > 10 && (
+                <div className="mt-8 flex justify-center">
+                    <Pagination
+                        count={count}
+                        pageSize={10}
+                        currentPage={page}
+                        onPageChange={setPage}
+                    />
+                </div>
+            )}
         </div>
     );
 };

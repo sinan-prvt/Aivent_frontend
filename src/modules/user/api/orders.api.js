@@ -11,9 +11,10 @@ const getHeaders = () => {
     };
 };
 
-export const getUserOrders = async () => {
+export const getUserOrders = async (page = 1) => {
     try {
         const response = await axios.get(`${ORDER_API_URL}/my-orders/`, {
+            params: { page },
             headers: getHeaders()
         });
         return response.data;
@@ -23,9 +24,10 @@ export const getUserOrders = async () => {
     }
 };
 
-export const getVendorOrders = async () => {
+export const getVendorOrders = async (page = 1) => {
     try {
         const response = await axios.get(`${ORDER_API_URL}/vendor-orders/`, {
+            params: { page },
             headers: getHeaders()
         });
         return response.data;
@@ -35,9 +37,10 @@ export const getVendorOrders = async () => {
     }
 };
 
-export const getAdminOrders = async () => {
+export const getAdminOrders = async (page = 1) => {
     try {
         const response = await axios.get(`${ORDER_API_URL}/admin/orders/`, {
+            params: { page },
             headers: getHeaders()
         });
         return response.data;

@@ -1,8 +1,8 @@
 
 import catalogApi from "../../../core/api/catalogAxios";
 
-export const getVendorProducts = async () => {
-    const response = await catalogApi.get("/vendor/products/");
+export const getVendorProducts = async (page = 1) => {
+    const response = await catalogApi.get(`/vendor/products/?page=${page}`);
     return response.data;
 };
 

@@ -1,12 +1,14 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCategoryProducts } from "../hooks/useCategoryProducts";
 import ProductGrid from "../components/ProductGrid";
+import Pagination from '@/components/ui/Pagination';
 
 const CategoryProducts = () => {
     const { slug } = useParams();
-    const { data: products, isLoading, error } = useCategoryProducts(slug);
+    const [page, setPage] = useState(1);
+    const { data, isLoading, error } = useCategoryProducts(slug, page);
 
     if (error) {
         return (
@@ -15,6 +17,9 @@ const CategoryProducts = () => {
             </div>
         );
     }
+
+    const products = data?.results || [];
+    const count = data?.count || 0;
 
     const filteredProducts = products?.filter(p => {
         try {
@@ -39,6 +44,17 @@ const CategoryProducts = () => {
             </div>
 
             <ProductGrid products={filteredProducts} isLoading={isLoading} />
+
+            {!isLoading && count > 10 && (
+                <div className="mt-12">
+                    <Pagination
+                        count={count}
+                        pageSize={10}
+                        currentPage={page}
+                        onPageChange={setPage}
+                    />
+                </div>
+            )}
         </div>
     );
 };

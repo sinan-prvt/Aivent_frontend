@@ -1,12 +1,14 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useAdminProducts } from "../hooks/usePendingProducts";
 import { useReviewProduct } from "../hooks/useReviewProduct";
 import ReviewCard from "../components/ReviewCard";
+import Pagination from '@/components/ui/Pagination';
 
 const AdminProductList = () => {
-    const [activeTab, setActiveTab] = React.useState("pending");
-    const { data: products, isLoading, error } = useAdminProducts(activeTab);
+    const [activeTab, setActiveTab] = useState("pending");
+    const [page, setPage] = useState(1);
+    const { data, isLoading, error } = useAdminProducts(activeTab, page);
     const mutation = useReviewProduct();
 
     const handleApprove = (id) => {
@@ -42,6 +44,9 @@ const AdminProductList = () => {
         );
     }
 
+    const products = data?.results || [];
+    const count = data?.count || 0;
+
     const filteredProducts = products?.filter(p => {
         try {
             const meta = JSON.parse(p.description);
@@ -57,6 +62,11 @@ const AdminProductList = () => {
         { id: "rejected", label: "Rejected", color: "red" },
     ];
 
+    const handleTabChange = (tabId) => {
+        setActiveTab(tabId);
+        setPage(1); // Reset to first page on tab change
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Product Reviews</h1>
@@ -65,7 +75,7 @@ const AdminProductList = () => {
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => handleTabChange(tab.id)}
                         className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === tab.id
                             ? "text-gray-900"
                             : "text-gray-400 hover:text-gray-600"
@@ -77,7 +87,7 @@ const AdminProductList = () => {
                         )}
                         <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === tab.id ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-400"
                             }`}>
-                            {tab.id === activeTab ? filteredProducts.length : "-"}
+                            {tab.id === activeTab ? count : "-"}
                         </span>
                     </button>
                 ))}
@@ -90,18 +100,31 @@ const AdminProductList = () => {
             <div className="space-y-6">
                 {filteredProducts.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-lg text-gray-400">
-                        No pending products to review. Great job!
+                        No {activeTab} products to review. Great job!
                     </div>
                 ) : (
-                    filteredProducts.map((product) => (
-                        <ReviewCard
-                            key={product.id}
-                            product={product}
-                            onApprove={handleApprove}
-                            onReject={handleReject}
-                            isProcessing={mutation.isPending}
-                        />
-                    ))
+                    <>
+                        {filteredProducts.map((product) => (
+                            <ReviewCard
+                                key={product.id}
+                                product={product}
+                                onApprove={handleApprove}
+                                onReject={handleReject}
+                                isProcessing={mutation.isPending}
+                            />
+                        ))}
+
+                        {count > 10 && (
+                            <div className="mt-8 flex justify-center">
+                                <Pagination
+                                    count={count}
+                                    pageSize={10}
+                                    currentPage={page}
+                                    onPageChange={setPage}
+                                />
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

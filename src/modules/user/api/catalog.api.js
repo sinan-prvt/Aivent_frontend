@@ -6,8 +6,8 @@ export const getCategories = async () => {
     return response.data;
 };
 
-export const getCategoryProducts = async (slug) => {
-    const response = await catalogApi.get(`/categories/${slug}/products/`);
+export const getCategoryProducts = async (slug, page = 1) => {
+    const response = await catalogApi.get(`/categories/${slug}/products/?page=${page}`);
     return response.data;
 };
 

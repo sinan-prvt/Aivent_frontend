@@ -2,17 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { getVendorOrders } from '../../../user/api/orders.api';
 import BookingCustomerDetails from '../../components/BookingCustomerDetails';
+import Pagination from '@/components/ui/Pagination';
 
 export default function DecorBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
-    const fetchBookings = async () => {
+    const fetchBookings = async (page = currentPage) => {
         try {
-            const data = await getVendorOrders();
-            setBookings(data);
-            if (data.length > 0) setSelectedBooking(data[0]);
+            setLoading(true);
+            const data = await getVendorOrders(page);
+            const results = data.results || [];
+            setBookings(results);
+            setTotalCount(data.count || 0);
+            if (results.length > 0 && !selectedBooking) setSelectedBooking(results[0]);
         } catch (error) {
             console.error("Failed to fetch bookings", error);
         } finally {
@@ -21,8 +27,8 @@ export default function DecorBookings() {
     };
 
     useEffect(() => {
-        fetchBookings();
-    }, []);
+        fetchBookings(currentPage);
+    }, [currentPage]);
 
     const handleApprove = async () => {
         if (!selectedBooking?.booking_id) return;
@@ -86,38 +92,50 @@ export default function DecorBookings() {
                     ) : bookings.length === 0 ? (
                         <div className="p-8 text-center text-gray-500">No bookings found.</div>
                     ) : (
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold tracking-wider sticky top-0">
-                                <tr>
-                                    <th className="px-6 py-4">Theme/Product</th>
-                                    <th className="px-6 py-4">Event Date</th>
-                                    <th className="px-6 py-4">Amount</th>
-                                    <th className="px-6 py-4">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {bookings.map((booking) => (
-                                    <tr
-                                        key={booking.id}
-                                        onClick={() => setSelectedBooking(booking)}
-                                        className={`hover:bg-indigo-50/30 transition-colors cursor-pointer ${selectedBooking?.id === booking.id ? 'bg-indigo-50/50' : ''}`}
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            {booking.booking_details?.product_title || 'Decor Item'}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-500">
-                                            {booking.booking_details?.date || 'N/A'}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-900 font-medium">₹{booking.amount}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.booking_status)}`}>
-                                                {booking.booking_status}
-                                            </span>
-                                        </td>
+                        <>
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold tracking-wider sticky top-0">
+                                    <tr>
+                                        <th className="px-6 py-4">Theme/Product</th>
+                                        <th className="px-6 py-4">Event Date</th>
+                                        <th className="px-6 py-4">Amount</th>
+                                        <th className="px-6 py-4">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {bookings.map((booking) => (
+                                        <tr
+                                            key={booking.id}
+                                            onClick={() => setSelectedBooking(booking)}
+                                            className={`hover:bg-indigo-50/30 transition-colors cursor-pointer ${selectedBooking?.id === booking.id ? 'bg-indigo-50/50' : ''}`}
+                                        >
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                {booking.booking_details?.product_title || 'Decor Item'}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500">
+                                                {booking.booking_details?.date || 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-900 font-medium">₹{booking.amount}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.booking_status)}`}>
+                                                    {booking.booking_status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {totalCount > 10 && (
+                                <div className="p-4 border-t border-gray-100">
+                                    <Pagination
+                                        count={totalCount}
+                                        pageSize={10}
+                                        currentPage={currentPage}
+                                        onPageChange={setCurrentPage}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

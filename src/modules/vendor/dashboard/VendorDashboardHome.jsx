@@ -82,9 +82,10 @@ export default function VendorDashboardHome() {
   if (catId === "8") return <RitualDashboard />;
   if (catId === "9") return <LogisticsDashboard />;
 
-  const totalProducts = products?.length || 0;
-  const activeProducts = products?.filter(p => p.is_available).length || 0;
-  const pendingProducts = products?.filter(p => p.status === 'pending').length || 0;
+  const productList = products?.results || [];
+  const totalProducts = products?.count || 0;
+  const activeProducts = productList.filter(p => p.is_available).length || 0;
+  const pendingProducts = productList.filter(p => p.status === 'pending').length || 0;
 
   return (
     <div className="space-y-8">
@@ -166,7 +167,7 @@ export default function VendorDashboardHome() {
               <div className="animate-pulse space-y-4">
                 {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-50 rounded-xl"></div>)}
               </div>
-            ) : products?.slice(0, 4).map((product) => (
+            ) : productList.slice(0, 4).map((product) => (
               <div key={product.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
                 <div className="h-12 w-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                   {product.image ? (

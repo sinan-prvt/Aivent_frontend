@@ -5,9 +5,13 @@ import { useUpdateProduct } from '../../hooks/useUpdateProduct';
 import { useDeleteProduct } from '../../hooks/useDeleteProduct';
 import MenuEditor from './MenuEditor';
 import { getMediaUrl } from '@/core/utils/media';
+import Pagination from '@/components/ui/Pagination';
 
 export default function MenuBuilder() {
-    const { data: products, isLoading, refetch } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: productsData, isLoading, refetch } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
     const updateMutation = useUpdateProduct();
     const deleteMutation = useDeleteProduct();
 
@@ -248,6 +252,16 @@ export default function MenuBuilder() {
                         </tbody>
                     </table>
                 </div>
+                {totalCount > 10 && (
+                    <div className="p-6 border-t border-gray-100 flex justify-center">
+                        <Pagination
+                            count={totalCount}
+                            pageSize={10}
+                            currentPage={currentPage}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Summary Statistics */}

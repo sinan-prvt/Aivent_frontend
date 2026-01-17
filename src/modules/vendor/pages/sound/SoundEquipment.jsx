@@ -4,6 +4,7 @@ import { FiSpeaker, FiMusic, FiMic, FiPlus, FiCheckSquare, FiLoader, FiBox, FiSe
 import { useVendorProducts } from "../../hooks/useVendorProducts";
 import { useDeleteProduct } from "../../hooks/useDeleteProduct";
 import AddEquipmentModal from "./components/AddEquipmentModal";
+import Pagination from '@/components/ui/Pagination';
 import { getMediaUrl } from "@/core/utils/media";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -16,7 +17,10 @@ const TYPE_ICONS = {
 };
 
 export default function SoundEquipment() {
-    const { data: products, isLoading } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: productsData, isLoading } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
     const deleteMutation = useDeleteProduct();
     const navigate = useNavigate();
     const { category } = useParams(); // Should be 'sound'
@@ -176,6 +180,17 @@ export default function SoundEquipment() {
             ))}
 
             <AddEquipmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+            {totalCount > 10 && (
+                <div className="flex justify-center py-8">
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
+            )}
         </div>
     );
 };

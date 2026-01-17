@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useVendorProducts } from "../../hooks/useVendorProducts";
 import { useCategories } from "../../../user/hooks/useCategories";
 import { useDeleteProduct } from "../../hooks/useDeleteProduct";
+import Pagination from '@/components/ui/Pagination';
 
 // Internal Modal Component for Vendor Product View (Same as Inventory)
 const ProductViewModal = ({ product, onClose }) => {
@@ -92,7 +93,10 @@ const ProductViewModal = ({ product, onClose }) => {
 
 export default function ThemeManager() {
     const navigate = useNavigate();
-    const { data: products, isLoading: productsLoading } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: productsData, isLoading: productsLoading } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
     const { data: categories, isLoading: categoriesLoading } = useCategories();
 
     const isLoading = productsLoading || categoriesLoading;
@@ -270,6 +274,18 @@ export default function ThemeManager() {
                     >
                         Create your first design
                     </button>
+                </div>
+            )}
+
+            {/* Footer Pagination */}
+            {totalCount > 10 && (
+                <div className="flex justify-center py-10 border-t border-gray-100/50 mt-10">
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             )}
 

@@ -2,20 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { getAdminOrders, updateOrderStatus } from '../../user/api/orders.api';
+import Pagination from '@/components/ui/Pagination';
 
 const AdminPaymentsPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
-        loadOrders();
-    }, []);
+        loadOrders(currentPage);
+    }, [currentPage]);
 
-    const loadOrders = async () => {
+    const loadOrders = async (page = currentPage) => {
         try {
-            const data = await getAdminOrders();
-            setOrders(data);
+            setLoading(true);
+            const data = await getAdminOrders(page);
+            setOrders(data.results || []);
+            setTotalCount(data.count || 0);
         } catch (err) {
             console.error("Failed to load admin orders", err);
         } finally {
@@ -53,6 +58,7 @@ const AdminPaymentsPage = () => {
             ) : (
                 <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                     <table className="w-full text-left">
+                        {/* ... table content */}
                         <thead className="bg-white/5 text-neutral-400 text-sm uppercase">
                             <tr>
                                 <th className="p-4">Order ID</th>
@@ -98,6 +104,15 @@ const AdminPaymentsPage = () => {
                             ))}
                         </tbody>
                     </table>
+
+                    <div className="p-4 border-t border-white/10">
+                        <Pagination
+                            count={totalCount}
+                            pageSize={10}
+                            currentPage={currentPage}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
+                    </div>
                 </div>
             )}
         </div>

@@ -4,9 +4,13 @@ import { useVendorProducts } from '../../hooks/useVendorProducts';
 import { useDeleteProduct } from '../../hooks/useDeleteProduct';
 import CateringPackageForm from './CateringPackageForm';
 import { getMediaUrl } from '@/core/utils/media';
+import Pagination from '@/components/ui/Pagination';
 
 export default function CateringPackages() {
-    const { data: products, isLoading } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: productsData, isLoading } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
     const deleteMutation = useDeleteProduct();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingPackage, setEditingPackage] = useState(null);
@@ -149,6 +153,17 @@ export default function CateringPackages() {
                     })
                 )}
             </div>
+
+            {totalCount > 10 && (
+                <div className="flex justify-center py-8">
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
+            )}
 
             {(isCreateModalOpen || editingPackage) && (
                 <CateringPackageForm

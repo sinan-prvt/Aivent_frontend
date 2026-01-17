@@ -23,8 +23,9 @@ export default function SoundDashboard() {
     const { tasks, isLoading: tasksLoading } = useScheduleTasks();
 
     // Stats Calculation
-    const totalServices = products?.length || 0;
-    const activeServices = products?.filter(p => p.status === 'approved').length || 0;
+    const productList = products?.results || [];
+    const totalServices = products?.count || 0;
+    const activeServices = productList.filter(p => p.status === 'approved').length || 0;
 
     // Upcoming Events Logic
     const today = startOfToday();

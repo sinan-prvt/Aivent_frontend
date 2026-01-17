@@ -42,9 +42,12 @@ export const usePhotographyData = () => {
 
     // Data Processing
     const profile = profileQuery.data || {};
-    const packages = packagesQuery.data || [];
-    const deliveries = deliveriesQuery.data || [];
-    const tasks = tasksQuery.data || [];
+    const packagesData = packagesQuery.data || {};
+    const packages = packagesData.results || (Array.isArray(packagesData) ? packagesData : []);
+    const deliveriesData = deliveriesQuery.data || {};
+    const deliveries = deliveriesData.results || (Array.isArray(deliveriesData) ? deliveriesData : []);
+    const tasksData = tasksQuery.data || {};
+    const tasks = tasksData.results || (Array.isArray(tasksData) ? tasksData : []);
 
     // Calculate Stats
     const stats = {

@@ -9,15 +9,16 @@ export default function CateringDashboard() {
     const { data: products, isLoading } = useVendorProducts();
 
     const stats = React.useMemo(() => {
-        if (!products) return { menus: 0, packages: 0 };
-        const menus = products.filter(p => {
+        const productList = products?.results || [];
+        if (productList.length === 0) return { menus: 0, packages: 0 };
+        const menus = productList.filter(p => {
             try {
                 const meta = JSON.parse(p.description);
                 return meta.type === 'menu' && p.is_available;
             } catch (e) { return false; }
         }).length;
 
-        const packages = products.filter(p => {
+        const packages = productList.filter(p => {
             try {
                 const meta = JSON.parse(p.description);
                 return meta.type === 'package' && p.is_available;
@@ -28,8 +29,9 @@ export default function CateringDashboard() {
     }, [products]);
 
     const popularItems = React.useMemo(() => {
-        if (!products) return [];
-        return products.slice(0, 3).map(p => {
+        const productList = products?.results || [];
+        if (productList.length === 0) return [];
+        return productList.slice(0, 3).map(p => {
             try {
                 const meta = JSON.parse(p.description);
                 return {

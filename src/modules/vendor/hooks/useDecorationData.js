@@ -21,7 +21,8 @@ export const useDecorationData = () => {
 
     // Data Processing
     const profile = profileQuery.data || {};
-    const products = Array.isArray(productsQuery.data) ? productsQuery.data : [];
+    const productsData = productsQuery.data || {};
+    const products = productsData.results || (Array.isArray(productsData) ? productsData : []);
 
     // Calculate Stats
     const stats = {

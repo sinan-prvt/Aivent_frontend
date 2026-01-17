@@ -21,12 +21,15 @@ import {
 } from "lucide-react";
 import { fetchDeliveries, createDelivery, updateDelivery, deleteDelivery, uploadPackageImage } from "../../api/photography.api";
 import { useAuth } from "@/app/providers/AuthProvider";
+import Pagination from '@/components/ui/Pagination';
 
 const MEDIA_BASE_URL = "http://localhost:8003";
 
 export default function PhotographyDeliveryCenter() {
   const { user } = useAuth();
   const [deliveries, setDeliveries] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -46,14 +49,15 @@ export default function PhotographyDeliveryCenter() {
   const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
-    loadDeliveries();
-  }, []);
+    loadDeliveries(currentPage);
+  }, [currentPage]);
 
-  const loadDeliveries = async () => {
+  const loadDeliveries = async (page = currentPage) => {
     try {
       setLoading(true);
-      const res = await fetchDeliveries();
-      setDeliveries(res.data);
+      const res = await fetchDeliveries(page);
+      setDeliveries(res.data.results || []);
+      setTotalCount(res.data.count || 0);
     } catch (error) {
       console.error("Failed to load deliveries", error);
     } finally {
@@ -317,6 +321,18 @@ export default function PhotographyDeliveryCenter() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalCount > 10 && (
+            <div className="flex justify-center py-10 border-t border-gray-100 mt-6">
+              <Pagination
+                count={totalCount}
+                pageSize={10}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
         </div>

@@ -5,11 +5,15 @@ import { useVendorProducts } from "../../hooks/useVendorProducts";
 import { useDeleteProduct } from "../../hooks/useDeleteProduct";
 import AddServiceModal from "./components/AddServiceModal";
 import ServiceDetailsModal from "./components/ServiceDetailsModal";
+import Pagination from '@/components/ui/Pagination';
 import { getMediaUrl } from "@/core/utils/media";
 import { useNavigate } from "react-router-dom";
 
 export default function SoundServices() {
-    const { data: services, isLoading } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: servicesData, isLoading } = useVendorProducts(currentPage);
+    const services = servicesData?.results || [];
+    const totalCount = servicesData?.count || 0;
     const deleteMutation = useDeleteProduct();
     const navigate = useNavigate();
 
@@ -163,6 +167,17 @@ export default function SoundServices() {
 
             <AddServiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             <ServiceDetailsModal isOpen={!!viewService} onClose={() => setViewService(null)} service={viewService} />
+
+            {totalCount > 10 && (
+                <div className="flex justify-center py-8">
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
+            )}
         </div>
     );
 };

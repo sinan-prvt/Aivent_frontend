@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { fetchPackages, createPackage, deletePackage, uploadPackageImage, updatePackage } from "../../api/photography.api";
 import { useAuth } from "@/app/providers/AuthProvider";
+import Pagination from '@/components/ui/Pagination';
 
 const MEDIA_BASE_URL = "http://localhost:8003";
 
@@ -74,6 +75,8 @@ export default function PhotographyPackages() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("all");
     const [packages, setPackages] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(true);
 
     // Modal States
@@ -95,14 +98,15 @@ export default function PhotographyPackages() {
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        loadPackages();
-    }, []);
+        loadPackages(currentPage);
+    }, [currentPage]);
 
-    const loadPackages = async () => {
+    const loadPackages = async (page = currentPage) => {
         try {
             setLoading(true);
-            const res = await fetchPackages();
-            setPackages(res.data);
+            const res = await fetchPackages(page);
+            setPackages(res.data.results || []);
+            setTotalCount(res.data.count || 0);
         } catch (error) {
             console.error("Failed to load packages", error);
         } finally {
@@ -311,6 +315,18 @@ export default function PhotographyPackages() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalCount > 10 && (
+                <div className="flex justify-center py-10 border-t border-gray-100 mt-10">
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             )}
 

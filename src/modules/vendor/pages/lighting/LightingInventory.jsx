@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useVendorProducts } from "../../hooks/useVendorProducts";
 import { useCategories } from "../../../user/hooks/useCategories";
 import { useDeleteProduct } from "../../hooks/useDeleteProduct";
+import Pagination from '@/components/ui/Pagination';
 
 // Internal Modal Component for Equipment View
 const EquipmentViewModal = ({ equipment, onClose }) => {
@@ -54,7 +55,10 @@ const AVAILABILITY_OPTIONS = [
 
 export default function LightingInventory() {
     const navigate = useNavigate();
-    const { data: products, isLoading: productsLoading } = useVendorProducts();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data: productsData, isLoading: productsLoading } = useVendorProducts(currentPage);
+    const products = productsData?.results || [];
+    const totalCount = productsData?.count || 0;
     const { data: categories, isLoading: categoriesLoading } = useCategories();
     const deleteMutation = useDeleteProduct();
     const [selectedEquipment, setSelectedEquipment] = useState(null);
@@ -267,11 +271,17 @@ export default function LightingInventory() {
             )}
 
             {/* Footer Info */}
-            {equipmentItems.length > 0 && (
-                <div className="text-center py-6">
-                    <p className="text-xs text-gray-400 font-medium">Showing {equipmentItems.length} items</p>
-                </div>
-            )}
+            <div className="flex flex-col items-center gap-4 py-6">
+                {totalCount > 10 && (
+                    <Pagination
+                        count={totalCount}
+                        pageSize={10}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                )}
+                <p className="text-xs text-gray-400 font-medium">Showing {equipmentItems.length} of {totalCount} items</p>
+            </div>
 
             {/* Equipment View Modal */}
             {selectedEquipment && (

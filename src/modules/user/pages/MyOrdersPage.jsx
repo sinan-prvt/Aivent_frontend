@@ -4,6 +4,7 @@ import { Package, Calendar, Clock, ChevronRight, AlertCircle, XCircle, RefreshCw
 import { getUserOrders, deleteOrderItem } from '../api/orders.api';
 import { initiatePayment, verifyPayment, confirmCODPayment } from '../api/payment.api';
 import Navbar from '../../../components/layout/Navbar';
+import Pagination from '@/components/ui/Pagination';
 import { useNavigate } from 'react-router-dom';
 
 const OrderDetailsModal = ({ subOrder, onClose }) => {
@@ -102,13 +103,21 @@ const MyOrdersPage = () => {
     const [selectedSubOrder, setSelectedSubOrder] = useState(null);
     const [vendorNames, setVendorNames] = useState({});
     const [paymentMethods, setPaymentMethods] = useState({}); // { orderId: 'ONLINE' | 'COD' }
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
     const navigate = useNavigate();
     const failedVendors = useRef(new Set());
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (page = currentPage) => {
         try {
-            const data = await getUserOrders();
-            setOrders(data);
+            setLoading(true);
+            const data = await getUserOrders(page);
+            // Handle paginated response structure
+            setOrders(data.results || []);
+            setTotalCount(data.count || 0);
         } catch (err) {
             setError("Failed to load orders. Please try again.");
         } finally {
@@ -117,8 +126,8 @@ const MyOrdersPage = () => {
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(currentPage);
+    }, [currentPage]);
 
     useEffect(() => {
         const fetchNames = async () => {
@@ -307,7 +316,9 @@ const MyOrdersPage = () => {
                     ) : (
                         <div className="space-y-8">
                             {orders.map((order) => (
+                                // ... (no change in the order mapping logic itself)
                                 <motion.div key={order.id} className="bg-white rounded-[32px] p-8 border border-gray-200 shadow-sm overflow-hidden relative group">
+                                    {/* Order content here */}
                                     <div className="flex flex-col lg:flex-row justify-between gap-12 relative z-10">
                                         {/* Left Side: Order Info */}
                                         <div className="lg:w-1/3 space-y-8">
@@ -340,8 +351,8 @@ const MyOrdersPage = () => {
                                                             onClick={(e) => { e.stopPropagation(); setPaymentMethods(prev => ({ ...prev, [order.id]: 'ONLINE' })) }}
                                                             disabled={loading}
                                                             className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${(paymentMethods[order.id] || 'ONLINE') === 'ONLINE'
-                                                                    ? 'bg-white text-indigo-600 shadow-sm'
-                                                                    : 'text-gray-400 hover:text-gray-600'
+                                                                ? 'bg-white text-indigo-600 shadow-sm'
+                                                                : 'text-gray-400 hover:text-gray-600'
                                                                 }`}
                                                         >
                                                             Online
@@ -350,8 +361,8 @@ const MyOrdersPage = () => {
                                                             onClick={(e) => { e.stopPropagation(); setPaymentMethods(prev => ({ ...prev, [order.id]: 'COD' })) }}
                                                             disabled={loading}
                                                             className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${paymentMethods[order.id] === 'COD'
-                                                                    ? 'bg-indigo-600 text-white shadow-sm'
-                                                                    : 'text-gray-400 hover:text-gray-600'
+                                                                ? 'bg-indigo-600 text-white shadow-sm'
+                                                                : 'text-gray-400 hover:text-gray-600'
                                                                 }`}
                                                         >
                                                             COD
@@ -362,9 +373,9 @@ const MyOrdersPage = () => {
                                                         onClick={(e) => { e.stopPropagation(); handlePayment(order) }}
                                                         disabled={loading}
                                                         className={`w-full flex items-center justify-center gap-3 px-8 py-5 text-white rounded-2xl transition-all font-black text-sm tracking-widest uppercase shadow-xl active:scale-[0.98] ${loading ? 'bg-gray-400 cursor-not-allowed shadow-none' :
-                                                                paymentMethods[order.id] === 'COD'
-                                                                    ? 'bg-indigo-900 shadow-indigo-200 hover:bg-black'
-                                                                    : 'bg-rose-600 shadow-rose-200 hover:bg-rose-700'
+                                                            paymentMethods[order.id] === 'COD'
+                                                                ? 'bg-indigo-900 shadow-indigo-200 hover:bg-black'
+                                                                : 'bg-rose-600 shadow-rose-200 hover:bg-rose-700'
                                                             }`}
                                                     >
                                                         <CreditCard className="w-6 h-6" />
@@ -450,6 +461,13 @@ const MyOrdersPage = () => {
                                     </div>
                                 </motion.div>
                             ))}
+
+                            <Pagination
+                                count={totalCount}
+                                pageSize={pageSize}
+                                currentPage={currentPage}
+                                onPageChange={(page) => setCurrentPage(page)}
+                            />
                         </div>
                     )}
                 </motion.div>

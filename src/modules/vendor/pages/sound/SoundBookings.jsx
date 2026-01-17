@@ -3,18 +3,24 @@ import { FiDownload, FiSearch, FiFilter, FiCheckCircle, FiAlertCircle, FiCalenda
 import { getVendorOrders } from '../../../user/api/orders.api';
 import { useAuth } from '../../../../app/providers/AuthProvider';
 import BookingCustomerDetails from '../../components/BookingCustomerDetails';
+import Pagination from '@/components/ui/Pagination';
 
 export default function SoundBookings() {
     const { user } = useAuth();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
-    const fetchBookings = async () => {
+    const fetchBookings = async (page = currentPage) => {
         try {
-            const data = await getVendorOrders();
-            setBookings(data);
-            if (data.length > 0) setSelectedBooking(data[0]);
+            setLoading(true);
+            const data = await getVendorOrders(page);
+            const results = data.results || [];
+            setBookings(results);
+            setTotalCount(data.count || 0);
+            if (results.length > 0 && !selectedBooking) setSelectedBooking(results[0]);
         } catch (error) {
             console.error("Failed to fetch bookings", error);
         } finally {
@@ -23,8 +29,8 @@ export default function SoundBookings() {
     };
 
     useEffect(() => {
-        fetchBookings();
-    }, []);
+        fetchBookings(currentPage);
+    }, [currentPage]);
 
     const handleApprove = async () => {
         if (!selectedBooking?.booking_id) return;
@@ -110,54 +116,66 @@ export default function SoundBookings() {
                                 <p className="font-bold">No active bookings found</p>
                             </div>
                         ) : (
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50/50 border-b border-gray-100 text-[10px] uppercase text-gray-400 font-black tracking-widest sticky top-0 z-10">
-                                    <tr>
-                                        <th className="px-8 py-5">Event Detail</th>
-                                        <th className="px-6 py-5">Schedule</th>
-                                        <th className="px-6 py-5">Equipment</th>
-                                        <th className="px-6 py-5">Status</th>
-                                        <th className="px-8 py-5 text-right">Quote</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {bookings.map((booking) => {
-                                        const details = booking.booking_details || {};
-                                        const isSelected = selectedBooking?.id === booking.id;
-                                        return (
-                                            <tr
-                                                key={booking.id}
-                                                onClick={() => setSelectedBooking(booking)}
-                                                className={`hover:bg-indigo-50/30 transition-all cursor-pointer group ${isSelected ? 'bg-indigo-50/50' : ''}`}
-                                            >
-                                                <td className="px-8 py-5">
-                                                    <div className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                        {details.event_type || 'Gig'}
-                                                    </div>
-                                                    <div className="text-[10px] text-gray-400 font-mono mt-0.5">#{booking.id.slice(0, 8)}</div>
-                                                </td>
-                                                <td className="px-6 py-5 whitespace-nowrap">
-                                                    <div className="text-sm font-bold text-gray-700">{details.date || 'TBD'}</div>
-                                                    <div className="text-[10px] text-gray-400 font-bold uppercase">{details.guests || 0} Guests</div>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <div className="text-sm text-gray-600 font-medium">
-                                                        {details.product_title || 'Sound Package'}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusColor(booking.booking_status)}`}>
-                                                        {booking.booking_status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 text-right">
-                                                    <div className="text-sm font-black text-gray-900">₹{parseFloat(booking.amount).toLocaleString()}</div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                            <>
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50/50 border-b border-gray-100 text-[10px] uppercase text-gray-400 font-black tracking-widest sticky top-0 z-10">
+                                        <tr>
+                                            <th className="px-8 py-5">Event Detail</th>
+                                            <th className="px-6 py-5">Schedule</th>
+                                            <th className="px-6 py-5">Equipment</th>
+                                            <th className="px-6 py-5">Status</th>
+                                            <th className="px-8 py-5 text-right">Quote</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {bookings.map((booking) => {
+                                            const details = booking.booking_details || {};
+                                            const isSelected = selectedBooking?.id === booking.id;
+                                            return (
+                                                <tr
+                                                    key={booking.id}
+                                                    onClick={() => setSelectedBooking(booking)}
+                                                    className={`hover:bg-indigo-50/30 transition-all cursor-pointer group ${isSelected ? 'bg-indigo-50/50' : ''}`}
+                                                >
+                                                    <td className="px-8 py-5">
+                                                        <div className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                            {details.event_type || 'Gig'}
+                                                        </div>
+                                                        <div className="text-[10px] text-gray-400 font-mono mt-0.5">#{booking.id.slice(0, 8)}</div>
+                                                    </td>
+                                                    <td className="px-6 py-5 whitespace-nowrap">
+                                                        <div className="text-sm font-bold text-gray-700">{details.date || 'TBD'}</div>
+                                                        <div className="text-[10px] text-gray-400 font-bold uppercase">{details.guests || 0} Guests</div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <div className="text-sm text-gray-600 font-medium">
+                                                            {details.product_title || 'Sound Package'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusColor(booking.booking_status)}`}>
+                                                            {booking.booking_status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <div className="text-sm font-black text-gray-900">₹{parseFloat(booking.amount).toLocaleString()}</div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                                {totalCount > 10 && (
+                                    <div className="p-4 border-t border-gray-100">
+                                        <Pagination
+                                            count={totalCount}
+                                            pageSize={10}
+                                            currentPage={currentPage}
+                                            onPageChange={setCurrentPage}
+                                        />
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
