@@ -7,7 +7,8 @@ const paymentApi = axios.create({
     baseURL: API_BASE_URL,
 });
 
-// Attach access token (payment service uses stateless JWT)
+
+
 paymentApi.interceptors.request.use((config) => {
     const token = getAccessToken();
     if (token) {
