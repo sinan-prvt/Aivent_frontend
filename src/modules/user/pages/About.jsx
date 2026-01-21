@@ -24,7 +24,7 @@ export default function About() {
                     </div>
                     <h1 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter text-gray-900 leading-[0.9]">
                         The Story Behind <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">Aivent.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">Aivent</span>
                     </h1>
                     <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
                         How a single catering service transformed into a mission to democratize grand celebrations for everyone, regardless of budget.
@@ -66,7 +66,7 @@ export default function About() {
                                 </div>
                                 <div>
                                     <h4 className="font-bold">Deep Connections</h4>
-                                    <p className="text-gray-500 text-sm">Talking to hundreds of clients revealed the true pain of event planning.</p>
+                                    <p className="text-gray-500 text-sm">Talking to so many clients revealed the true pain of event planning.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
