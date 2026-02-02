@@ -16,7 +16,6 @@ export default function About() {
         <div className="min-h-screen bg-[#fafafa] font-sans text-gray-900">
             <Navbar />
 
-            {/* Hero Section */}
             <div className="relative pt-32 pb-24 px-6 overflow-hidden">
                 <div className="max-w-6xl mx-auto text-center relative z-10">
                     <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-blue-100 uppercase tracking-wider">
@@ -31,14 +30,12 @@ export default function About() {
                     </p>
                 </div>
 
-                {/* Abstract Background Elements */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl -z-0 pointer-events-none">
                     <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-purple-100/50 rounded-full blur-[120px] mix-blend-multiply animate-pulse"></div>
                     <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-blue-100/50 rounded-full blur-[120px] mix-blend-multiply animate-pulse delay-700"></div>
                 </div>
             </div>
 
-            {/* The Roots Section */}
             <div className="max-w-7xl mx-auto px-6 mb-32">
                 <div className="grid md:grid-cols-2 gap-16 items-center">
                     <div className="relative group">
@@ -83,7 +80,6 @@ export default function About() {
                 </div>
             </div>
 
-            {/* The Problem Grid */}
             <div className="bg-gray-900 py-32 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/10 blur-[150px] pointer-events-none"></div>
                 <div className="max-w-6xl mx-auto px-6 relative z-10">
@@ -128,7 +124,6 @@ export default function About() {
                 </div>
             </div>
 
-            {/* The Pivot Section */}
             <div className="py-32 px-6">
                 <div className="max-w-6xl mx-auto bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
                     <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -163,7 +158,6 @@ export default function About() {
                 </div>
             </div>
 
-            {/* Mission Re-imagined */}
             <div className="pb-32 px-6">
                 <div className="max-w-4xl mx-auto text-center space-y-10">
                     <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-bold border border-indigo-100 uppercase tracking-wider">
@@ -184,7 +178,6 @@ export default function About() {
                 </div>
             </div>
 
-            {/* Footer */}
             <footer className="bg-gray-50 text-gray-400 py-16 px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className="flex items-center gap-3">

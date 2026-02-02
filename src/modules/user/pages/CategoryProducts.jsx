@@ -24,8 +24,6 @@ const CategoryProducts = () => {
     const filteredProducts = products?.filter(p => {
         try {
             const meta = JSON.parse(p.description);
-            // In Catering, we only want to show packages publicly.
-            // If it's a menu/dish, hide it from the grid.
             return meta.type !== 'menu';
         } catch (e) {
             return true;

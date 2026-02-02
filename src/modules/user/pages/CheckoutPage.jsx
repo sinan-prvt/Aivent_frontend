@@ -65,7 +65,6 @@ const CheckoutPage = () => {
     };
 
     const handleContinueToPayment = () => {
-        // Validate user details
         if (!userDetails.fullName || !userDetails.email || !userDetails.phone) {
             toast.error("Please fill in all required fields");
             return;
@@ -91,12 +90,10 @@ const CheckoutPage = () => {
         try {
             let masterOrderId = existingMasterOrderId || null;
 
-            // We loop through each selected item and create a separate sub-order/booking
             for (let i = 0; i < selectedItems.length; i++) {
                 const item = selectedItems[i];
                 const vid = String(item.vendor_id || item.vendor || "unknown");
 
-                // Generate unique idempotency key for each item
                 const idempotencyKey = `booking-${item.id}-${Date.now()}`;
 
                 const bookingData = {
@@ -111,7 +108,6 @@ const CheckoutPage = () => {
                     amount: parseFloat(item.price).toFixed(2),
                     master_order_id: masterOrderId, // Pass this to group items into one order
 
-                    // Add Booking Customer Details
                     customer_name: userDetails.fullName,
                     customer_email: userDetails.email,
                     customer_phone: userDetails.phone,
@@ -124,7 +120,6 @@ const CheckoutPage = () => {
 
                 const response = await createBooking(bookingData, idempotencyKey);
 
-                // Capture master order ID from the first item to use for the rest
                 if (!masterOrderId && response.master_order_id) {
                     masterOrderId = response.master_order_id;
                 }
@@ -134,10 +129,8 @@ const CheckoutPage = () => {
             setBookingSuccess(true);
             setIsProcessing(false);
 
-            // Log for debugging
             console.log("Final Vendor names used:", vendorNames);
 
-            // Redirect to My Orders page where they can track status
             setTimeout(() => navigate("/my-orders"), 2000);
 
         } catch (error) {
@@ -185,7 +178,6 @@ const CheckoutPage = () => {
                     <FiArrowLeft /> {currentStep === 1 ? "Back to planning" : "Back"}
                 </button>
 
-                {/* Progress Steps */}
                 <div className="flex items-center justify-center mb-12">
                     <div className="flex items-center gap-4">
                         <div className={`flex items-center gap-2 ${currentStep >= 1 ? 'text-indigo-600' : 'text-gray-400'}`}>
@@ -212,9 +204,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Main Content Area */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Step 1: Review Items */}
                         {currentStep === 1 && (
                             <>
                                 <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -270,7 +260,6 @@ const CheckoutPage = () => {
                             </>
                         )}
 
-                        {/* Step 2: User Details Form */}
                         {currentStep === 2 && (
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Details</h2>
@@ -358,7 +347,6 @@ const CheckoutPage = () => {
                             </section>
                         )}
 
-                        {/* Step 3: Payment Summary */}
                         {currentStep === 3 && (
                             <>
                                 <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -397,10 +385,8 @@ const CheckoutPage = () => {
                         )}
                     </div>
 
-                    {/* Payment Card */}
                     <div className="space-y-6">
                         <div className="bg-indigo-900 text-white rounded-2xl shadow-xl p-8 sticky top-24 overflow-hidden">
-                            {/* Decorative Circle */}
                             <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-600 rounded-full opacity-20"></div>
 
                             <h3 className="text-lg font-bold mb-8 relative z-10">Order Summary</h3>
