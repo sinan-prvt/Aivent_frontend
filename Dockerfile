@@ -1,9 +1,19 @@
 # Build Stage
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+# Pass in external configuration at build time
+ARG VITE_API_BASE_URL
+ARG VITE_VENDOR_API_BASE_URL
+ARG VITE_RECAPTCHA_SITE_KEY
+
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_VENDOR_API_BASE_URL=$VITE_VENDOR_API_BASE_URL
+ENV VITE_RECAPTCHA_SITE_KEY=$VITE_RECAPTCHA_SITE_KEY
+
 RUN npm run build
 
 # Production Stage

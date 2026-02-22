@@ -124,32 +124,34 @@ const FloatingAIAssistant = () => {
     };
 
     return (
-        <div className="fixed bottom-10 left-10 z-[9999] flex flex-col items-start translate-y-[-20%] sm:translate-y-0">
+        <div className="fixed inset-0 pointer-events-none z-[9999]">
             {/* CHAT WINDOW */}
             {isOpen && (
-                <div className="-mb-18 w-[340px] sm:w-[420px] h-[800px] max-h-[90vh] bg-white/70 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.4)] border border-white/50 flex flex-col overflow-hidden animate-slideUp ml-14 ">
+                <div className="fixed right-0 top-0 w-full sm:w-[480px] h-full bg-white/80 backdrop-blur-3xl shadow-[-20px_0_50px_-10px_rgba(0,0,0,0.15)] border-l border-white/20 flex flex-col overflow-hidden animate-slideInRight pointer-events-auto">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-gray-700 via-indigo-900 to-purple-900 p-2 text-white flex items-center justify-between backdrop-blur-lg">
-                        <div className="flex items-center gap-4">
-
+                    <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-8 text-white flex items-center justify-between shadow-lg">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center text-3xl border border-white/20 shadow-inner">
+                                <FiZap className="animate-pulse text-yellow-300" />
+                            </div>
                             <div>
-                                <h3 className="font-black text-2xs uppercase  opacity-80 mb-1 ml-30">Aivent Assistant</h3>
-                                <div className="flex items-center ml-32 gap-2">
-                                    <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_10px_rgba(74,222,128,0.5)] animate-pulse" />
-                                    <span className="text-xs font-black text-white  uppercase tracking-widest">System Online</span>
+                                <h3 className="font-black text-sm uppercase tracking-[0.2em] opacity-90 mb-1">Aivent AI Assistant</h3>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 bg-green-400 rounded-full shadow-[0_0_15px_rgba(74,222,128,0.6)] animate-pulse" />
+                                    <span className="text-[11px] font-black text-white/80 uppercase tracking-widest">Neural Engine Online</span>
                                 </div>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-3 hover:bg-white/10 rounded-2xl transition-all active:scale-90"
+                            className="w-12 h-12 flex items-center justify-center hover:bg-white/10 rounded-2xl transition-all active:scale-95 group"
                         >
-                            <FiX size={24} />
+                            <FiX size={28} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-transparent">
+                    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-transparent custom-scrollbar">
                         {chatHistory.map(msg => (
                             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                 <div className={`flex items-start gap-4 max-w-[92%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
@@ -162,7 +164,7 @@ const FloatingAIAssistant = () => {
                                                 <img
                                                     src="/ai-chat.png"
                                                     alt="AI"
-                                                    className="w-full h-full object-contain filter drop-shadow-md "
+                                                    className="w-full h-full object-contain filter drop-shadow-md"
                                                     onError={(e) => {
                                                         e.target.style.display = 'none';
                                                         e.target.nextSibling.style.display = 'flex';
@@ -174,7 +176,7 @@ const FloatingAIAssistant = () => {
                                             </>
                                         )}
                                     </div>
-                                    <div className={`p-5 rounded-3xl text-[13.5px] font-medium leading-[1.6] shadow-sm whitespace-pre-wrap ${msg.role === 'user'
+                                    <div className={`p-5 rounded-3xl text-[14px] font-medium leading-[1.6] shadow-sm whitespace-pre-wrap ${msg.role === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-none'
                                         : 'bg-white/60 backdrop-blur-sm text-slate-700 border border-white/40 rounded-tl-none'
                                         }`}>
@@ -185,7 +187,7 @@ const FloatingAIAssistant = () => {
                                 {/* Product Cards */}
                                 {msg.products && msg.products.length > 0 && (
                                     <div className="mt-5 w-full pl-14 space-y-4">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Our Top Matches</p>
+                                        <p className="text-[10px] font-black text-slate-400 font-black uppercase tracking-[0.2em]">Our Top Matches</p>
                                         <div className="space-y-3">
                                             {msg.products.map(product => (
                                                 <div
@@ -200,24 +202,10 @@ const FloatingAIAssistant = () => {
                                                         <img
                                                             src={(() => {
                                                                 if (!product.image) return "https://via.placeholder.com/100";
-
                                                                 let url = product.image;
-
-                                                                // Handle internal Docker hostnames
-                                                                if (url.includes('catalog-service:8000')) {
-                                                                    url = url.replace('catalog-service:8000', 'localhost:8003');
-                                                                }
-
-                                                                // If it's already an absolute URL (after hostname fix), use it
+                                                                if (url.includes('catalog-service:8000')) url = url.replace('catalog-service:8000', 'localhost:8003');
                                                                 if (url.startsWith('http')) return url;
-
-                                                                // Otherwise, build the full URL from the base
-                                                                const base = "http://localhost:8003";
-                                                                const hasMedia = url.includes('/media/');
-                                                                const leadingSlash = url.startsWith('/') ? '' : '/';
-                                                                const mediaPrefix = hasMedia ? '' : 'media/';
-
-                                                                return `${base}${leadingSlash}${mediaPrefix}${url}`;
+                                                                return `http://localhost:8003${url.startsWith('/') ? '' : '/'}${url.includes('/media/') ? '' : 'media/'}${url}`;
                                                             })()}
                                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                         />
@@ -264,16 +252,14 @@ const FloatingAIAssistant = () => {
                     </div>
 
                     {/* Input Area */}
-                    <div className="px-8 py-6 bg-transparen relative">
-
-                        {/* Suggestions Area */}
+                    <div className="p-8 bg-white/40 backdrop-blur-md border-t border-white/20">
                         {suggestions.length > 0 && !isTyping && (
-                            <div className="flex flex-wrap gap-2 mb-4 animate-fadeIn">
+                            <div className="flex flex-wrap gap-2 mb-6 animate-fadeIn transition-all">
                                 {suggestions.map((suggestion, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => handleSuggestionClick(suggestion)}
-                                        className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 transition-all active:scale-95"
+                                        className="px-4 py-2 bg-white/80 hover:bg-indigo-600 hover:text-white text-indigo-600 text-[11px] font-black uppercase tracking-wider rounded-full border border-indigo-100 shadow-sm transition-all active:scale-95"
                                     >
                                         {suggestion}
                                     </button>
@@ -281,53 +267,43 @@ const FloatingAIAssistant = () => {
                             </div>
                         )}
 
-                        {/* Subtle glow */}
-                        <div className="absolute inset-x-0 -top-6 h-12 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 blur-2xl opacity-70 pointer-events-none" />
-
                         <form onSubmit={handleSend} className="relative flex items-center gap-4">
-
-                            {/* Input shell */}
-                            <div className="flex-1 flex items-center bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-[0_20px_10px_-20px_rgba(0,0,0,0.4)] border border-black/40 px-6 py-4  transition-all">
-
-
-
+                            <div className="flex-1 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 px-6 py-4 shadow-inner">
                                 <input
                                     type="text"
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    placeholder="Ask Aivent AI..."
-                                    className="flex-1 bg-transparent outline-none text-sm font-semibold text-slate-800 placeholder-slate-400"
+                                    placeholder="Message Aivent AI..."
+                                    className="w-full bg-transparent outline-none text-sm font-bold text-slate-800 placeholder-slate-400"
                                 />
                             </div>
-
-                            {/* Send button */}
                             <button
                                 type="submit"
                                 disabled={!message.trim() || isTyping}
-                                className="w-14 h-14 rounded-2xl bg-gradient-to-r from-gray-700 via-indigo-900 to-purple-900 text-white flex items-center justify-center shadow-[0_15px_35px_-10px_rgba(79,70,229,0.6)] hover:scale-110 active:scale-95 transition-all disabled:opacity-40 disabled:grayscale"
+                                className="w-14 h-14 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all shadow-[0_10px_25px_-5px_rgba(79,70,229,0.4)] flex items-center justify-center flex-shrink-0 disabled:opacity-50"
                             >
-                                <FiSend size={20} />
+                                <FiSend size={22} className="ml-1" />
                             </button>
-
                         </form>
-
-                        {/* Footer */}
-
+                        <div className="flex items-center justify-center gap-3 mt-6 opacity-40">
+                            <div className="h-[1px] w-10 bg-slate-400" />
+                            <p className="text-[8px] text-slate-600 font-black uppercase tracking-[0.4em]">Neural Engine v1.0</p>
+                            <div className="h-[1px] w-10 bg-slate-400" />
+                        </div>
                     </div>
-
                 </div>
             )}
 
             {/* FLOAT BUTTON */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-20 h-20 flex items-center justify-center transition-all duration-500 group relative -ml-4 ${isOpen
-                    ? 'bg-slate-900 text-white rotate-[135deg] scale-60 rounded-full shadow-lg'
-                    : 'bg-transparent text-white hover:scale-110 !shadow-none'
-                    }`}
-            >
-                {isOpen ? <FiX size={32} /> : (
-                    <div className="relative w-full h-full flex items-center justify-center ">
+            <div className="fixed bottom-10 right-10 pointer-events-auto">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`w-20 h-20 flex items-center justify-center transition-all duration-500 group relative ${isOpen
+                        ? 'bg-slate-900 text-white rotate-[135deg] scale-0 opacity-0 pointer-events-none'
+                        : 'bg-transparent text-white hover:scale-110 !shadow-none'
+                        }`}
+                >
+                    <div className="relative w-full h-full flex items-center justify-center">
                         <img
                             src="/ai-chat.png"
                             alt="Chat"
@@ -337,29 +313,44 @@ const FloatingAIAssistant = () => {
                                 e.target.nextSibling.style.display = 'flex';
                             }}
                         />
-
+                        <div style={{ display: 'none' }} className="w-16 h-16 items-center justify-center bg-indigo-600 text-white rounded-2xl shadow-lg">
+                            <FiMessageSquare size={32} />
+                        </div>
                         <div className="absolute top-2 right-2 w-5 h-5 bg-rose-500 border-[3px] border-white rounded-full flex items-center justify-center shadow-md">
                             <div className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                         </div>
                     </div>
-                )}
-            </button>
+                </button>
+            </div>
 
             {/* Custom Styles */}
             <style>{`
-                @keyframes slideUp {
-                    from { transform: translateY(40px) scale(0.9); opacity: 0; filter: blur(10px); }
-                    to { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
                 }
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
-                .animate-slideUp {
-                    animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+                .animate-slideInRight {
+                    animation: slideInRight 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
                 }
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out forwards;
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(0, 0, 0, 0.1);
                 }
             `}</style>
         </div>

@@ -12,14 +12,14 @@ const Register = () => {
     phone: "",
     password: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Format phone number as user types
     if (name === "phone") {
       const cleaned = value.replace(/\D/g, ''); // Remove non-digits
@@ -72,7 +72,7 @@ const Register = () => {
     }
 
     setErrors(newErrors);
-    
+
     // Show toast for validation errors
     if (Object.keys(newErrors).length > 0) {
       const firstError = Object.values(newErrors)[0];
@@ -85,7 +85,7 @@ const Register = () => {
         draggable: true,
       });
     }
-    
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -98,9 +98,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       // Check if reCAPTCHA is available
       if (!window.grecaptcha || !window.grecaptcha.execute) {
@@ -110,7 +110,7 @@ const Register = () => {
       await new Promise((resolve) => window.grecaptcha.ready(resolve));
 
       const token = await window.grecaptcha.execute(
-        "6LdwKQ8sAAAAAE6NapNtdAu20LFs3HRs9iFd6ACx",
+        "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
         { action: "register" }
       );
 
@@ -139,10 +139,10 @@ const Register = () => {
 
     } catch (err) {
       console.error("REGISTER ERROR:", err?.response?.data);
-      
+
       // Show error toast with detailed message
       let errorMessage = "Registration failed. Please try again.";
-      
+
       if (err?.response?.data) {
         if (typeof err.response.data === 'string') {
           errorMessage = err.response.data;
@@ -172,7 +172,7 @@ const Register = () => {
   // Password strength indicator
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, color: "bg-gray-200", text: "" };
-    
+
     let strength = 0;
     if (password.length >= 8) strength += 1;
     if (/(?=.*[a-z])/.test(password)) strength += 1;
@@ -182,7 +182,7 @@ const Register = () => {
 
     const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500"];
     const texts = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
-    
+
     return {
       strength: (strength / 5) * 100,
       color: colors[strength - 1] || "bg-gray-200",
@@ -193,13 +193,13 @@ const Register = () => {
   const passwordStrength = getPasswordStrength(formData.password);
 
 
-   return (
+  return (
     <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center px-4">
       {/* Toast Container */}
       <ToastContainer />
-      
+
       <div className=" bg-white rounded-3xl shadow-xl max-w-4xl w-full flex overflow-hidden h-[580px]">
-          {/* Left Panel - Registration Form */}
+        {/* Left Panel - Registration Form */}
         <div className="w-full lg:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           <h2 className="text-2xl font-bold text-gray-800">Create Account</h2>
           <p className="text-gray-500 mb-3">Fill your details below to get started.</p>
@@ -217,9 +217,8 @@ const Register = () => {
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${
-                  errors.username ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${errors.username ? 'border-red-500' : 'border-gray-300'
+                  }`}
               />
               {errors.username && (
                 <p className="text-red-500 text-xs mt-1 flex items-center">
@@ -241,9 +240,8 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
               />
               {errors.email && (
                 <p className="text-red-500 text-xs mt-1 flex items-center">
@@ -270,9 +268,8 @@ const Register = () => {
                   onChange={handleChange}
                   disabled={isLoading}
                   maxLength="10"
-                  className={`w-full pl-12 pr-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full pl-12 pr-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 ${errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
               </div>
               <div className="flex justify-between mt-1">
@@ -301,9 +298,8 @@ const Register = () => {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 pr-12 ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none disabled:opacity-50 pr-12 ${errors.password ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 <button
                   type="button"
@@ -314,18 +310,17 @@ const Register = () => {
                   {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
                 </button>
               </div>
-              
+
               {/* Password Strength Indicator */}
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-600">Password Strength:</span>
-                    <span className={`text-xs font-medium ${
-                      passwordStrength.text === "Strong" ? "text-green-600" :
-                      passwordStrength.text === "Good" ? "text-blue-600" :
-                      passwordStrength.text === "Fair" ? "text-yellow-600" :
-                      passwordStrength.text === "Weak" ? "text-orange-600" : "text-red-600"
-                    }`}>
+                    <span className={`text-xs font-medium ${passwordStrength.text === "Strong" ? "text-green-600" :
+                        passwordStrength.text === "Good" ? "text-blue-600" :
+                          passwordStrength.text === "Fair" ? "text-yellow-600" :
+                            passwordStrength.text === "Weak" ? "text-orange-600" : "text-red-600"
+                      }`}>
                       {passwordStrength.text}
                     </span>
                   </div>
@@ -359,7 +354,7 @@ const Register = () => {
                   </ul> */}
                 </div>
               )}
-              
+
               {errors.password && (
                 <p className="text-red-500 text-xs mt-2 flex items-center">
                   <span className="mr-1">⚠</span>
@@ -429,7 +424,7 @@ const Register = () => {
           <div className="text-center max-w-sm">
             <h1 className="text-5xl font-bold mb-4">Welcome!</h1>
             <p className="text-lg">Join our community today.</p>
-            
+
             {/* Registration Benefits List */}
             <div className="mt-10 text-left space-y-4">
               <div className="flex items-center">
